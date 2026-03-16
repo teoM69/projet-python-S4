@@ -2,16 +2,16 @@ import pygame
 
 class Lobby:
         def __init__(self, screen):
-             self.inMenu = true
+             self.inMenu = True
         def run(self, screen):            
              while   self.inMenu:
                   for event in pygame.event.get():
                         if event.type == pygame.QUIT:
-                              self.inMenu = false
+                              self.inMenu = False
                               self.quitGame(screen)
                         if event.type == pygame.KEYDOWN:
                               if event.key == pygame.K_RETURN:
-                                    self.inMenu = false
+                                    self.inMenu = False
                                     self.launchGame(screen)
         def showMenu(self, screen):
             # Affiche le menu de jeu
@@ -23,8 +23,7 @@ class Lobby:
               
             
         def launchGame(self, screen):
-            # Lancer le jeu principal
-            pass  # Remplacez par le code pour démarrer le jeu
+            
               
     
         def quitGame(self, screen):
