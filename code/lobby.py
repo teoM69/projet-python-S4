@@ -7,27 +7,23 @@ class Lobby:
              while   self.inMenu:
                   for event in pygame.event.get():
                         if event.type == pygame.QUIT:
-                              self.inMenu = False
-                              self.quitGame(screen)
+                            self.inMenu = False
+                            self.quitGame(screen)
                         if event.type == pygame.KEYDOWN:
-                              if event.key == pygame.K_RETURN:
-                                    self.inMenu = False
-                                    self.launchGame(screen)
+                            if event.key == pygame.K_RETURN:
+                                self.inMenu = False
+                            if event.key == pygame.K_ESCAPE:
+                                 self.quitGame()
         def showMenu(self, screen):
-            # Affiche le menu de jeu
             font = pygame.font.Font(None, 74)
-            text = font.render("Appuyez sur Entrée pour jouer", True, (255, 255, 255))
-            text_rect = text.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2))
-            screen.blit(text, text_rect)
+            text1 = font.render("Appuyez sur Entrée pour jouer", True, (255, 255, 255))
+            text2 = font.render("Echap pour quitter", True, (255, 255, 255))
+            text1_rect = text1.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2 - 30))
+            text2_rect = text2.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2 + 30))
+            screen.blit(text1, text1_rect)
+            screen.blit(text2, text2_rect)
             pygame.display.flip()
-              
-            
-        def launchGame(self, screen):
-            
-              
     
-        def quitGame(self, screen):
-            # Quitter le jeu
+        def quitGame(self):
             pygame.quit()
             exit()
-            
