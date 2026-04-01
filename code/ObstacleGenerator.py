@@ -16,6 +16,7 @@ class ObstacleGenerator:
             y = self.screen_height - 50  # Assuming the obstacle height is 50
             new_obstacle = Obstacle(x, y, obstacleType, speed)
             self.obstacles.append(new_obstacle)
+        
         def update(self, speed):
             for obstacle in self.obstacles:
                 obstacle.move(speed)
