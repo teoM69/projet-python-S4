@@ -32,6 +32,11 @@ class Player:
                     img = img.convert_alpha()
                 except Exception:
                     img = img.convert()
+                # scale to player size
+                try:
+                    img = pygame.transform.scale(img, (self.width, self.height))
+                except Exception:
+                    pass
                 return img
             except Exception:
                 surf = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
@@ -77,7 +82,7 @@ class Player:
         self.update_rect()
 
     # movement / animation
-    def mov(self):
+    def mov(self, floor_y=None):
         # animation timing
         self.anim_timer += 1
         if self.anim_timer > 10:
@@ -99,6 +104,14 @@ class Player:
 
         # apply physics
         self.playerPosition.y += (self.gravity_speed * self.gravity_direction)
+        # clamp to floor if provided (player bottom should not go below floor_y)
+        if floor_y is not None:
+            max_y = floor_y - self.height
+            if self.playerPosition.y > max_y:
+                self.playerPosition.y = max_y
+                self.is_flipping = False
+            if self.playerPosition.y < 0:
+                self.playerPosition.y = 0
         self.update_rect()
 
     def draw(self, screen):

@@ -1,6 +1,6 @@
 import pygame
 import random
-from code.Obstacle import Obstacle, IMAGES
+from code.Obstacle import Obstacle, IMAGES, OBSTACLE_TYPES
 from code.constants import WALL_HEIGHT, PLATFORM_BOTTOM_OFFSET
 
 
@@ -16,7 +16,7 @@ class ObstacleGenerator:
 
     def generate_obstacle(self, obstacleType=None, speed=0):
         if obstacleType is None:
-            obstacleType = random.choice(list(IMAGES.keys()))
+            obstacleType = random.choice(OBSTACLE_TYPES)
         x = self.screen_width
         img = IMAGES.get(obstacleType)
         h = img.get_height() if img is not None else 50

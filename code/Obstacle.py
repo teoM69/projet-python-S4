@@ -2,14 +2,19 @@ import os
 import pygame
 from code.constants import OBSTACLE_DEFAULT_SIZE
 
-# Load obstacle images
-IMAGES = {}
 _IMAGE_NAMES = [
     'bomb.png',
     'double_bomb.png',
     'obstacle_push1.png',
     'obstacle_push2.png',
 ]
+
+# Public list of obstacle types (filenames). Safe to import and use before images are loaded.
+OBSTACLE_TYPES = list(_IMAGE_NAMES)
+
+# store paths and lazy-load images only when first needed (after pygame.init())
+IMAGES = {}
+_IMAGE_PATHS = {}
 
 def _obstacles_dir():
     base = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -24,10 +29,21 @@ def _obstacles_dir():
 
 _OB_DIR = _obstacles_dir()
 for name in _IMAGE_NAMES:
-    img = None
     if _OB_DIR:
         path = os.path.join(_OB_DIR, name)
         if os.path.isfile(path):
+            _IMAGE_PATHS[name] = path
+
+
+def ensure_images_loaded():
+    """Load images into IMAGES dict on first use. Safe to call any time; if
+    loading fails we fill with placeholder surfaces."""
+    if IMAGES:
+        return
+    for name in _IMAGE_NAMES:
+        img = None
+        path = _IMAGE_PATHS.get(name)
+        if path:
             try:
                 img = pygame.image.load(path)
                 try:
@@ -36,16 +52,21 @@ for name in _IMAGE_NAMES:
                     img = img.convert()
             except Exception:
                 img = None
-    if img is None:
-        surf = pygame.Surface(OBSTACLE_DEFAULT_SIZE, pygame.SRCALPHA)
-        surf.fill((255, 0, 0, 180))
-        IMAGES[name] = surf
-    else:
-        IMAGES[name] = pygame.transform.scale(img, OBSTACLE_DEFAULT_SIZE)
+        if img is None:
+            surf = pygame.Surface(OBSTACLE_DEFAULT_SIZE, pygame.SRCALPHA)
+            surf.fill((255, 0, 0, 180))
+            IMAGES[name] = surf
+        else:
+            IMAGES[name] = pygame.transform.scale(img, OBSTACLE_DEFAULT_SIZE)
 
 
 class Obstacle:
     def __init__(self, x, y, obstacleType, speed=0):
+        # ensure images are loaded (lazy-load after pygame.init())
+        try:
+            ensure_images_loaded()
+        except Exception:
+            pass
         self.coord = pygame.math.Vector2(x, y)
         self.type = obstacleType
         self.image = IMAGES.get(obstacleType)
