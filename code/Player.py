@@ -4,9 +4,13 @@ from code.constants import OBSTACLE_DEFAULT_SIZE
 
 
 class Player:
+    """Unified Player class: provides the simple API expected by obstacles
+    and also supports simple sprite animations if image files exist.
+    """
     def __init__(self, nom, x, y):
         self.nom = nom
-        self.gravity_direction = 1  # 1 = normal, -1 = inversé
+        # gravity: direction and speed
+        self.gravity_direction = 1  # 1 = normal, -1 = inverted
         self.gravity_speed = 5
         self.is_flipping = False
         self.playerPosition = pygame.Vector2(x, y)
@@ -17,8 +21,9 @@ class Player:
         self.rect = pygame.Rect(int(x), int(y), self.width, self.height)
         self.alive = True
 
-        # --- Chargement des images (fallback si absent) ---
+        # --- safe image loading for animations ---
         anim_dir = os.path.join('assets', 'Images', 'mov_animation')
+
         def safe_load(name):
             path = os.path.join(anim_dir, name)
             try:
@@ -33,7 +38,7 @@ class Player:
                 surf.fill((0, 255, 0))
                 return surf
 
-        # Using available filenames in repository (fallback to simple surfaces)
+        # Prefer available animation files; fallback to solid surfaces
         self.walk_normal = [safe_load('mov1_1.img.png'), safe_load('mov2_1.img.png'), safe_load('mov1_1.img.png')]
         self.walk_inverted = [safe_load('mov1_-1.img.png'), safe_load('mov2_-1.img.png'), safe_load('mov1_-1.img.png')]
         self.flip_imgs = [safe_load('flip1.img.png'), safe_load('flip2.img.png')]
@@ -42,6 +47,7 @@ class Player:
         self.anim_index = 0
         self.anim_timer = 0
 
+    # API methods required by obstacles / game
     def update_rect(self):
         self.rect.topleft = (int(self.playerPosition.x), int(self.playerPosition.y))
 
@@ -57,19 +63,27 @@ class Player:
             pass
 
     def switchGravity(self):
-        # On change la direction et on lance l'animation de salto
+        # flip gravity and start flip animation
         self.gravity_direction *= -1
         self.is_flipping = True
         self.anim_index = 0
 
+    def die(self):
+        print('Player died')
+
+    def spawn(self, x=None, y=None):
+        if x is not None and y is not None:
+            self.playerPosition = pygame.Vector2(x, y)
+        self.update_rect()
+
+    # movement / animation
     def mov(self):
-        # 1. Gestion du timing de l'animation
+        # animation timing
         self.anim_timer += 1
         if self.anim_timer > 10:
             self.anim_index += 1
             self.anim_timer = 0
 
-        # 2. Logique visuelle (Quelle image afficher ?)
         if self.is_flipping:
             if self.anim_index >= len(self.flip_imgs):
                 self.is_flipping = False
@@ -83,7 +97,7 @@ class Player:
             self.anim_index %= len(self.walk_inverted)
             self.current_image = self.walk_inverted[self.anim_index]
 
-        # 3. Application du mouvement physique
+        # apply physics
         self.playerPosition.y += (self.gravity_speed * self.gravity_direction)
         self.update_rect()
 
@@ -91,11 +105,4 @@ class Player:
         # blit current image at rect.topleft
         screen.blit(self.current_image, self.rect.topleft)
 
-    def die(self):
-        print("die")
-
-    def spawn(self, x=None, y=None):
-        if x is not None and y is not None:
-            self.playerPosition = pygame.Vector2(x, y)
-        self.update_rect()
        
