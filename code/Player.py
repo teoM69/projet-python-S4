@@ -47,6 +47,7 @@ class Player:
         self.walk_normal = [safe_load('mov1_1.img.png'), safe_load('mov2_1.img.png'), safe_load('mov1_1.img.png')]
         self.walk_inverted = [safe_load('mov1_-1.img.png'), safe_load('mov2_-1.img.png'), safe_load('mov1_-1.img.png')]
         self.flip_imgs = [safe_load('flip1.img.png'), safe_load('flip2.img.png')]
+        self.dead_image = safe_load('dead.png')
 
         self.current_image = self.walk_normal[0]
         self.anim_index = 0
@@ -74,7 +75,10 @@ class Player:
         self.anim_index = 0
 
     def die(self):
-        print('Player died')
+        if  self.alive:
+            print('Player died')
+            self.alive = False
+            self.current_image = self.dead_image
 
     def spawn(self, x=None, y=None):
         if x is not None and y is not None:
@@ -117,5 +121,3 @@ class Player:
     def draw(self, screen):
         # blit current image at rect.topleft
         screen.blit(self.current_image, self.rect.topleft)
-
-       
