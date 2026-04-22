@@ -78,7 +78,7 @@ class Player:
         if  self.alive:
             print('Player died')
             self.alive = False
-            self.current_image = self.dead_image
+            self.current_image = self.dead_image ## mettre limage de mort
 
     def spawn(self, x=None, y=None):
         if x is not None and y is not None:
