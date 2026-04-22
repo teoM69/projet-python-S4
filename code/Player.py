@@ -16,8 +16,8 @@ class Player:
         self.playerPosition = pygame.Vector2(x, y)
 
         # size / hitbox
-        self.width = 40
-        self.height = 40
+        self.width = 55
+        self.height = 55
         self.rect = pygame.Rect(int(x), int(y), self.width, self.height)
         self.alive = True
 
