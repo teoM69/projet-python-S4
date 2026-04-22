@@ -346,11 +346,6 @@ class World:
         else:
             screen.blit(self.bg_image, (0, 0))
 
-        screen.blit(self._gradient_overlay, (0, 0))
-        self._draw_ambient(screen)
-        screen.blit(self._scanline_overlay, (0, 0))
-        screen.blit(self._vignette_overlay, (0, 0))
-
     def drawWalls(self, screen):
         for seg in self.top_structures:
             rect = pygame.Rect(int(seg["x"]), int(self.roof_y - seg["h"]), int(seg["w"]), int(seg["h"]))
