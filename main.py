@@ -64,6 +64,22 @@ while running:
                 if not getattr(player, 'alive', True):
                     # simple: go back to menu on death
                     lobby.inMenu = True
+        
+        # === COLLISION & STRUCTURE SUPPORT (Joueur 1) ===
+        # Détecte si le joueur se pose sur les structures du monde
+        support_span = player.width * 0.8  # Zone de collision du joueur (80% de sa largeur)
+        floor_y = game.world.find_floor_y(player.rect.centerx, support_span, player.rect.top)  # Sol le plus proche
+        ceiling_y = game.world.find_ceiling_y(player.rect.centerx, support_span, player.rect.bottom)  # Plafond le plus proche
+        
+        # === COLLISION & STRUCTURE SUPPORT (Joueur 2) - Mode Duo ===
+        # Même détection pour le joueur 2 en mode duo
+        floor_y_p2 = None
+        ceiling_y_p2 = None
+        # À implémenter : détection pour joueur 2 si mode duo actif
+        
+        # === AUTRES POINTS DE DÉTECTION ===
+        # Points de détection additionnels pour une physique plus précise
+        # À implémenter selon les besoins du gameplay
 
     pygame.display.flip()
     clock.tick(60)
