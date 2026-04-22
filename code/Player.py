@@ -86,7 +86,7 @@ class Player:
         self.update_rect()
 
     # movement / animation
-    def mov(self, floor_y=None):
+    def mov(self, floor_y=None, ceiling_y=None):
         # animation timing
         self.anim_timer += 1
         if self.anim_timer > 10:
@@ -108,14 +108,25 @@ class Player:
 
         # apply physics
         self.playerPosition.y += (self.gravity_speed * self.gravity_direction)
-        # clamp to floor if provided (player bottom should not go below floor_y)
+        
+        # === COLLISION HANDLING ===
+        # Clamp to floor if provided (player bottom should not go below floor_y)
         if floor_y is not None:
             max_y = floor_y - self.height
             if self.playerPosition.y > max_y:
                 self.playerPosition.y = max_y
                 self.is_flipping = False
-            if self.playerPosition.y < 0:
-                self.playerPosition.y = 0
+        
+        # Clamp to ceiling if provided (player top should not go above ceiling_y)
+        if ceiling_y is not None:
+            if self.playerPosition.y < ceiling_y:
+                self.playerPosition.y = ceiling_y
+                self.is_flipping = False
+        
+        # Clamp to screen bounds
+        if self.playerPosition.y < 0:
+            self.playerPosition.y = 0
+        
         self.update_rect()
 
     def draw(self, screen):

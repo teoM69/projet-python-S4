@@ -42,11 +42,27 @@ while running:
         game.world.drawBackGround(screen)
         game.world.drawWalls(screen)
 
-        # spawn obstacles periodically
+        # === UPDATE WORLD STRUCTURES ===
+        # Generate platforms (top, bottom, middle) with "holes" (gaps)
+        game.world.update_structures(game.gameSpeed)
+
+        # spawn obstacles periodically on 3 different lanes
         now = pygame.time.get_ticks()
         if now - last_spawn >= spawn_interval:
             speed = game.gameSpeed * random.uniform(0.8, 1.3)
-            ob_gen.generate_obstacle(None, speed)
+            # Get Y positions for each lane to spawn obstacles correctly
+            top_lane_y = game.world.roof_y
+            bottom_lane_y = game.world.floor_y
+            middle_lane_y = game.world.get_middle_spawn_y()
+            
+            # Spawn obstacle with all 3 lanes (creates variety)
+            ob_gen.generate_obstacle(
+                None, 
+                speed,
+                top_lane_y=top_lane_y,
+                bottom_lane_y=bottom_lane_y,
+                middle_lane_y=middle_lane_y
+            )
             last_spawn = now
             spawn_interval = random.randint(OBSTACLE_SPAWN_MIN_MS, OBSTACLE_SPAWN_MAX_MS)
 
@@ -55,8 +71,14 @@ while running:
         ob_gen.draw(screen)
 
         # update/draw player (keep on platform)
-        floor_y = screen.get_height() - 50 - 165
-        player.mov(floor_y=floor_y)
+        # === COLLISION & STRUCTURE SUPPORT (Joueur 1) ===
+        # Détecte le toit et sol dynamiques du monde AVANT de bouger le joueur
+        support_span = player.width * 0.8  # Zone de collision (80% de la largeur)
+        floor_y = game.world.find_floor_y(player.rect.centerx, support_span, player.rect.top)
+        ceiling_y = game.world.find_ceiling_y(player.rect.centerx, support_span, player.rect.bottom)
+        
+        # Applique les contraintes de collision au mouvement du joueur
+        player.mov(floor_y=floor_y, ceiling_y=ceiling_y)
         player.draw(screen)
        
         interface.show_score(game.score)
@@ -68,7 +90,7 @@ while running:
         if not player.alive:
             interface.show_game_over()
 
-        # collisions
+        # collisions with obstacles
         for ob in ob_gen.list_obstacles()[:]:
             if player.rect.colliderect(ob.rect):
                 ob.apply_effect(player)

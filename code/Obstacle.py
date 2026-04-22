@@ -1,4 +1,5 @@
 import os
+import math
 import pygame
 from code.constants import OBSTACLE_DEFAULT_SIZE
 
@@ -85,6 +86,14 @@ class Obstacle:
         self.move(s)
 
     def draw(self, surface):
+        shadow = pygame.Surface((self.rect.width + 10, self.rect.height + 10), pygame.SRCALPHA)
+        pygame.draw.ellipse(
+            shadow,
+            (0, 0, 0, 85),
+            (4, self.rect.height - 4, max(8, self.rect.width - 2), 10),
+        )
+        surface.blit(shadow, (self.rect.x - 5, self.rect.y))
+
         surface.blit(self.image, self.rect)
 
     def apply_effect(self, player):
