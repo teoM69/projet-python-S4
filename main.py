@@ -36,11 +36,27 @@ while running:
         game.world.drawBackGround(screen)
         game.world.drawWalls(screen)
 
-        # spawn obstacles periodically
+        # === UPDATE WORLD STRUCTURES ===
+        # Generate platforms (top, bottom, middle) with "holes" (gaps)
+        game.world.update_structures(game.gameSpeed)
+
+        # spawn obstacles periodically on 3 different lanes
         now = pygame.time.get_ticks()
         if now - last_spawn >= spawn_interval:
             speed = game.gameSpeed * random.uniform(0.8, 1.3)
-            ob_gen.generate_obstacle(None, speed)
+            # Get Y positions for each lane to spawn obstacles correctly
+            top_lane_y = game.world.roof_y
+            bottom_lane_y = game.world.floor_y
+            middle_lane_y = game.world.get_middle_spawn_y()
+            
+            # Spawn obstacle with all 3 lanes (creates variety)
+            ob_gen.generate_obstacle(
+                None, 
+                speed,
+                top_lane_y=top_lane_y,
+                bottom_lane_y=bottom_lane_y,
+                middle_lane_y=middle_lane_y
+            )
             last_spawn = now
             spawn_interval = random.randint(OBSTACLE_SPAWN_MIN_MS, OBSTACLE_SPAWN_MAX_MS)
 
