@@ -20,8 +20,14 @@ class World:
         self.screen_width = screen_width
         self.screen_height = screen_height
 
-        # Roof is around 75% from the bottom of the screen (about 25% from top).
+        # === SCREEN GEOMETRY ===
+        # Calculate roof and floor positions
+        # Roof is around 25% from the top (75% from the bottom) of the screen
+        # This creates the upper corridor where obstacles can spawn
         self.roof_y = int(self.screen_height * 0.25)
+        
+        # Floor position: screen height - top margin (50) - floor height (165)
+        # This creates the lower corridor where obstacles can spawn
         self.floor_y = self.screen_height - 50 - 165
 
         self.top_structures = []
@@ -192,6 +198,11 @@ class World:
         self._next_middle_x = self.screen_width + 420
 
     def _middle_band(self):
+        # === MIDDLE PLATFORM ZONE ===
+        # Define the vertical band where middle platforms (obstacles) can spawn
+        # Top limit: below the roof (roof_y + 80)
+        # Bottom limit: above the floor (floor_y - 95)
+        # This creates a playable zone in the middle of the screen
         top_limit = self.roof_y + 80
         bottom_limit = self.floor_y - 95
         if bottom_limit <= top_limit:
