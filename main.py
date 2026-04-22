@@ -5,6 +5,7 @@ from code.lobby import Lobby
 from code.Player import Player
 from code.ObstacleGenerator import ObstacleGenerator
 from code.constants import OBSTACLE_SPAWN_MIN_MS, OBSTACLE_SPAWN_MAX_MS
+from code.interface import Interface
 
 pygame.init()
 screen = pygame.display.set_mode((1000, 700))
@@ -12,6 +13,7 @@ clock = pygame.time.Clock()
 
 game = Game(screen)
 lobby = Lobby(screen)
+interface = Interface(screen)
 
 # test player and obstacle generator (kept local here for quick testing)
 player = Player('player', 100, screen.get_height() - 50 - 165 - 40)
@@ -20,12 +22,16 @@ last_spawn = pygame.time.get_ticks()
 spawn_interval = random.randint(OBSTACLE_SPAWN_MIN_MS, OBSTACLE_SPAWN_MAX_MS)
 
 running = True
+paused = False
 
 while running:
     events = pygame.event.get()
     for event in events:
         if event.type == pygame.QUIT:
             running = False
+        if event.type == pygame.KEYDOWN:       # ← ajoute ça
+            if event.key == pygame.K_p:        # ← et ça
+                paused = not paused     
 
     screen.fill((0, 0, 0))
 
@@ -52,6 +58,15 @@ while running:
         floor_y = screen.get_height() - 50 - 165
         player.mov(floor_y=floor_y)
         player.draw(screen)
+       
+        interface.show_score(game.score)
+        interface.show_best_score(game.bestScore)
+
+        if paused:
+            interface.show_pause()
+
+        if not player.alive:
+            interface.show_game_over()
 
         # collisions
         for ob in ob_gen.list_obstacles()[:]:
