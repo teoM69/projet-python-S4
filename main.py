@@ -16,7 +16,7 @@ lobby = Lobby(screen)
 interface = Interface(screen)
 
 # test player and obstacle generator (kept local here for quick testing)
-player = Player('player', 100, screen.get_height() - 50 - 165 - 40)
+player = Player('player', 100, screen.get_height() - 50 - 165 - 55)
 ob_gen = ObstacleGenerator(screen.get_width(), screen.get_height())
 last_spawn = pygame.time.get_ticks()
 spawn_interval = random.randint(OBSTACLE_SPAWN_MIN_MS, OBSTACLE_SPAWN_MAX_MS)
