@@ -49,17 +49,17 @@ while running:
         ob_gen.draw(screen)
 
         # update/draw player (keep on platform)
-        floor_y = screen.get_height() - 50 - 165
-        player.mov(floor_y=floor_y)
+        # === COLLISION & STRUCTURE SUPPORT (Joueur 1) ===
+        # Détecte le toit et sol dynamiques du monde AVANT de bouger le joueur
+        support_span = player.width * 0.8  # Zone de collision (80% de la largeur)
+        floor_y = game.world.find_floor_y(player.rect.centerx, support_span, player.rect.top)
+        ceiling_y = game.world.find_ceiling_y(player.rect.centerx, support_span, player.rect.bottom)
+        
+        # Applique les contraintes de collision au mouvement du joueur
+        player.mov(floor_y=floor_y, ceiling_y=ceiling_y)
         player.draw(screen)
 
-        # collisions
-        # === COLLISION & STRUCTURE SUPPORT (Joueur 1) ===
-        # Détecte si le joueur se pose sur les structures du monde
-        support_span = player.width * 0.8  # Zone de collision (80% de la largeur)
-        floor_y_from_world = game.world.find_floor_y(player.rect.centerx, support_span, player.rect.top)
-        ceiling_y_from_world = game.world.find_ceiling_y(player.rect.centerx, support_span, player.rect.bottom)
-        
+        # collisions with obstacles
         for ob in ob_gen.list_obstacles()[:]:
             if player.rect.colliderect(ob.rect):
                 ob.apply_effect(player)
