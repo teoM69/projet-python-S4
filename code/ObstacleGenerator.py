@@ -14,14 +14,27 @@ class ObstacleGenerator:
     def list_obstacles(self):
         return self.obstacles
 
-    def generate_obstacle(self, obstacleType=None, speed=0):
+    def generate_obstacle(self, obstacleType=None, speed=0, lane=None, top_lane_y=None, bottom_lane_y=None, middle_lane_y=None):
         if obstacleType is None:
             obstacleType = random.choice(OBSTACLE_TYPES)
+        if lane is None:
+            if middle_lane_y is not None:
+                lane = random.choices(["top", "bottom", "middle"], weights=[0.4, 0.4, 0.2])[0]
+            else:
+                lane = random.choice(["top", "bottom"])
         x = self.screen_width
         img = IMAGES.get(obstacleType)
         h = img.get_height() if img is not None else 50
-        # align obstacle bottom to top of bottom wall
-        y = self.screen_height - WALL_HEIGHT - PLATFORM_BOTTOM_OFFSET - h
+
+        floor_y = bottom_lane_y if bottom_lane_y is not None else self.screen_height - WALL_HEIGHT - PLATFORM_BOTTOM_OFFSET
+        if lane == "top":
+            y = top_lane_y if top_lane_y is not None else WALL_HEIGHT
+        elif lane == "middle" and middle_lane_y is not None:
+            y = middle_lane_y - h
+        else:
+            # align obstacle bottom to top of bottom wall
+            y = floor_y - h
+
         new_obstacle = Obstacle(x, y, obstacleType, speed)
         self.obstacles.append(new_obstacle)
 
