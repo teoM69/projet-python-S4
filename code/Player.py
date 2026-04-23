@@ -47,7 +47,7 @@ class Player:
         self.walk_normal = [safe_load('mov1_1.img.png'), safe_load('mov2_1.img.png'), safe_load('mov1_1.img.png')]
         self.walk_inverted = [safe_load('mov1_-1.img.png'), safe_load('mov2_-1.img.png'), safe_load('mov1_-1.img.png')]
         self.flip_imgs = [safe_load('flip1.img.png'), safe_load('flip2.img.png')]
-        self.dead_image = safe_load('dead.png')
+        self.dead_image = safe_load('dead.img.png')
 
         self.current_image = self.walk_normal[0]
         self.anim_index = 0
