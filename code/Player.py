@@ -47,11 +47,12 @@ class Player:
         self.walk_normal = [safe_load('mov1_1.img.png'), safe_load('mov2_1.img.png'), safe_load('mov1_1.img.png')]
         self.walk_inverted = [safe_load('mov1_-1.img.png'), safe_load('mov2_-1.img.png'), safe_load('mov1_-1.img.png')]
         self.flip_imgs = [safe_load('flip1.img.png'), safe_load('flip2.img.png')]
-        self.dead_image = safe_load('dead.img.png')
 
         self.current_image = self.walk_normal[0]
         self.anim_index = 0
         self.anim_timer = 0
+        self.trail_points = []
+        self.max_trail_points = 10
 
     # API methods required by obstacles / game
     def update_rect(self):
@@ -75,14 +76,12 @@ class Player:
         self.anim_index = 0
 
     def die(self):
-        if  self.alive:
-            print('Player died')
-            self.alive = False
-            self.current_image = self.dead_image
+        print('Player died')
 
     def spawn(self, x=None, y=None):
         if x is not None and y is not None:
             self.playerPosition = pygame.Vector2(x, y)
+        self.trail_points = []
         self.update_rect()
 
     # movement / animation
@@ -106,35 +105,47 @@ class Player:
             self.anim_index %= len(self.walk_inverted)
             self.current_image = self.walk_inverted[self.anim_index]
 
+        # Apply vertical movement with a small recovery tolerance to avoid
+        # occasional frame tunneling through thin/moving supports.
         prev_y = self.playerPosition.y
         next_y = prev_y + (self.gravity_speed * self.gravity_direction)
+        snap_tolerance = max(18, self.gravity_speed * 3)
 
-        # === COLLISION HANDLING ===
-        # Land only when actually crossing a support this frame to avoid
-        # snapping back upward after starting to fall into a hole.
-        if self.gravity_direction > 0 and floor_y is not None:
-            prev_bottom = prev_y + self.height
-            next_bottom = next_y + self.height
-            if prev_bottom <= floor_y and next_bottom >= floor_y:
-                next_y = floor_y - self.height
+        if self.gravity_direction < 0 and ceiling_y is not None:
+            min_y = ceiling_y
+            if next_y <= min_y and prev_y >= (min_y - snap_tolerance):
+                next_y = min_y
                 self.is_flipping = False
 
-        # Same idea for inverted gravity: attach only on true crossing.
-        if self.gravity_direction < 0 and ceiling_y is not None:
-            if prev_y >= ceiling_y and next_y <= ceiling_y:
-                next_y = ceiling_y
+        if self.gravity_direction > 0 and floor_y is not None:
+            max_y = floor_y - self.height
+            if next_y >= max_y and prev_y <= (max_y + snap_tolerance):
+                next_y = max_y
                 self.is_flipping = False
 
         self.playerPosition.y = next_y
-        
-        # Clamp to screen bounds
-        if self.playerPosition.y < 0:
-            self.playerPosition.y = 0
-        
         self.update_rect()
 
+        self.trail_points.append((self.rect.centerx, self.rect.centery, self.gravity_direction))
+        if len(self.trail_points) > self.max_trail_points:
+            self.trail_points.pop(0)
+
     def draw(self, screen):
+        trail_len = len(self.trail_points)
+        if trail_len > 1:
+            for idx, point in enumerate(self.trail_points[:-1]):
+                ratio = (idx + 1) / trail_len
+                radius = int(3 + (4 * ratio))
+                alpha = int(20 + (90 * ratio))
+                color = (105, 208, 255, alpha) if point[2] < 0 else (255, 186, 122, alpha)
+                glow = pygame.Surface((radius * 2 + 2, radius * 2 + 2), pygame.SRCALPHA)
+                pygame.draw.circle(glow, color, (radius + 1, radius + 1), radius)
+                screen.blit(glow, (point[0] - radius - 1, point[1] - radius - 1))
+
+        aura_color = (100, 196, 255, 90) if self.gravity_direction < 0 else (255, 172, 110, 90)
+        aura = pygame.Surface((self.width + 24, self.height + 24), pygame.SRCALPHA)
+        pygame.draw.ellipse(aura, aura_color, aura.get_rect())
+        screen.blit(aura, (self.rect.x - 12, self.rect.y - 12))
+
         # blit current image at rect.topleft
         screen.blit(self.current_image, self.rect.topleft)
-
-       
