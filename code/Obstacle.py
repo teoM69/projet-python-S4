@@ -96,6 +96,20 @@ class Obstacle:
 
         surface.blit(self.image, self.rect)
 
+        pulse = 0.5 + (0.5 * math.sin((pygame.time.get_ticks() * 0.012) + (self.rect.x * 0.04)))
+        t = (self.type or '').lower()
+        if 'bomb' in t:
+            color = (255, 90, 90, int(50 + (70 * pulse)))
+        elif 'push' in t:
+            color = (100, 195, 255, int(45 + (65 * pulse)))
+        else:
+            color = None
+
+        if color is not None:
+            glow = pygame.Surface((self.rect.width + 18, self.rect.height + 18), pygame.SRCALPHA)
+            pygame.draw.ellipse(glow, color, glow.get_rect(), width=3)
+            surface.blit(glow, (self.rect.x - 9, self.rect.y - 9))
+
     def apply_effect(self, player):
         t = (self.type or '').lower()
         # bomb => damage
