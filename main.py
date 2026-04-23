@@ -29,10 +29,11 @@ while running:
     for event in events:
         if event.type == pygame.QUIT:
             running = False
-        if event.type == pygame.KEYDOWN:       # ← ajoute ça
-            if event.key == pygame.K_p:        # ← et ça
+        if event.type == pygame.KEYDOWN:       
+            if event.key == pygame.K_p:        
                 paused = not paused     
-
+            if event.key == pygame.K_SPACE and not lobby.inMenu and not paused and player.alive:
+                player.switchGravity()
     screen.fill((0, 0, 0))
 
     if lobby.inMenu:
