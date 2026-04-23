@@ -74,12 +74,17 @@ while running:
         # update/draw player (keep on platform)
         # === COLLISION & STRUCTURE SUPPORT (Joueur 1) ===
         # Détecte le toit et sol dynamiques du monde AVANT de bouger le joueur
-        support_span = player.width * 0.8  # Zone de collision (80% de la largeur)
+        support_span = min(player.width * 0.8, 32)
         floor_y = game.world.find_floor_y(player.rect.centerx, support_span, player.rect.top)
         ceiling_y = game.world.find_ceiling_y(player.rect.centerx, support_span, player.rect.bottom)
         
         # Applique les contraintes de collision au mouvement du joueur
         player.mov(floor_y=floor_y, ceiling_y=ceiling_y)
+
+        # Kill player if they fall out of the playable area.
+        if player.rect.top > screen.get_height() + 40 or player.rect.bottom < -40:
+            player.alive = False
+
         player.draw(screen)
        
         interface.show_score(game.score)
@@ -90,6 +95,7 @@ while running:
 
         if not player.alive:
             interface.show_game_over()
+            lobby.inMenu = True
 
         # collisions with obstacles
         for ob in ob_gen.list_obstacles()[:]:

@@ -106,22 +106,26 @@ class Player:
             self.anim_index %= len(self.walk_inverted)
             self.current_image = self.walk_inverted[self.anim_index]
 
-        # apply physics
-        self.playerPosition.y += (self.gravity_speed * self.gravity_direction)
-        
+        prev_y = self.playerPosition.y
+        next_y = prev_y + (self.gravity_speed * self.gravity_direction)
+
         # === COLLISION HANDLING ===
-        # Clamp to floor if provided (player bottom should not go below floor_y)
-        if floor_y is not None:
-            max_y = floor_y - self.height
-            if self.playerPosition.y > max_y:
-                self.playerPosition.y = max_y
+        # Land only when actually crossing a support this frame to avoid
+        # snapping back upward after starting to fall into a hole.
+        if self.gravity_direction > 0 and floor_y is not None:
+            prev_bottom = prev_y + self.height
+            next_bottom = next_y + self.height
+            if prev_bottom <= floor_y and next_bottom >= floor_y:
+                next_y = floor_y - self.height
                 self.is_flipping = False
-        
-        # Clamp to ceiling if provided (player top should not go above ceiling_y)
-        if ceiling_y is not None:
-            if self.playerPosition.y < ceiling_y:
-                self.playerPosition.y = ceiling_y
+
+        # Same idea for inverted gravity: attach only on true crossing.
+        if self.gravity_direction < 0 and ceiling_y is not None:
+            if prev_y >= ceiling_y and next_y <= ceiling_y:
+                next_y = ceiling_y
                 self.is_flipping = False
+
+        self.playerPosition.y = next_y
         
         # Clamp to screen bounds
         if self.playerPosition.y < 0:

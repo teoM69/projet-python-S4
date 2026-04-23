@@ -1,6 +1,6 @@
 import pygame
 import random
-from code.Obstacle import Obstacle, IMAGES, OBSTACLE_TYPES
+from code.Obstacle import Obstacle, IMAGES, OBSTACLE_TYPES, ensure_images_loaded
 from code.constants import WALL_HEIGHT, PLATFORM_BOTTOM_OFFSET
 
 
@@ -14,15 +14,41 @@ class ObstacleGenerator:
     def list_obstacles(self):
         return self.obstacles
 
+    def _spawn_x(self):
+        x = self.screen_width
+        # Keep a minimum horizontal spacing near the spawn edge to avoid
+        # stacked obstacles appearing at odd positions.
+        if self.obstacles:
+            rightmost = max(ob.rect.right for ob in self.obstacles)
+            min_gap = random.randint(80, 160)
+            x = max(x, rightmost + min_gap)
+        return x
+
+    def _clamp_y(self, y, h):
+        min_y = 0
+        max_y = max(0, self.screen_height - h)
+        return max(min_y, min(max_y, int(y)))
+
     def generate_obstacle(self, obstacleType=None, speed=0, lane=None, top_lane_y=None, bottom_lane_y=None, middle_lane_y=None):
+        ensure_images_loaded()
+
         if obstacleType is None:
             obstacleType = random.choice(OBSTACLE_TYPES)
+
+        available_lanes = ["top", "bottom"]
+        if middle_lane_y is not None:
+            available_lanes.append("middle")
+
+        if lane not in available_lanes:
+            lane = None
+
         if lane is None:
-            if middle_lane_y is not None:
+            if "middle" in available_lanes:
                 lane = random.choices(["top", "bottom", "middle"], weights=[0.4, 0.4, 0.2])[0]
             else:
                 lane = random.choice(["top", "bottom"])
-        x = self.screen_width
+
+        x = self._spawn_x()
         img = IMAGES.get(obstacleType)
         h = img.get_height() if img is not None else 50
 
@@ -34,6 +60,8 @@ class ObstacleGenerator:
         else:
             # align obstacle bottom to top of bottom wall
             y = floor_y - h
+
+        y = self._clamp_y(y, h)
 
         new_obstacle = Obstacle(x, y, obstacleType, speed)
         self.obstacles.append(new_obstacle)
