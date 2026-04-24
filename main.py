@@ -22,13 +22,18 @@ game = Game(screen)
 lobby = Lobby(screen)
 interface = Interface(screen)
 
-# Keep player on the initial floor line with current sprite height.
 player = Player("player", 100, screen.get_height() - 50 - 165 - 55)
 ob_gen = ObstacleGenerator(screen.get_width(), screen.get_height())
 last_spawn = pygame.time.get_ticks()
 spawn_interval = random.randint(OBSTACLE_SPAWN_MIN_MS, OBSTACLE_SPAWN_MAX_MS)
 paused = False
 run_start_time = pygame.time.get_ticks()
+
+# AJOUT
+game_over_screen = False
+game_over_time = 0
+GAME_OVER_DELAY_MS = 2500
+was_in_menu = True
 
 running = True
 
@@ -42,7 +47,20 @@ while running:
 
     if lobby.inMenu:
         lobby.run(screen, events)
+        was_in_menu = True
     else:
+        # RESET au moment où on quitte le menu
+        if was_in_menu:
+            player.alive = True
+            player.playerPosition.x = 100
+            player.playerPosition.y = screen.get_height() - 50 - 165 - 55
+            game.gameSpeed = 5.0
+            game.score = 0
+            run_start_time = pygame.time.get_ticks()
+            last_spawn = pygame.time.get_ticks()
+            game_over_screen = False
+            was_in_menu = False
+
         now = pygame.time.get_ticks()
 
         for event in events:
@@ -99,10 +117,13 @@ while running:
                     except ValueError:
                         pass
 
-            if not player.alive:
+            # MODIFIÉ
+            if not player.alive and not game_over_screen:
                 game.end()
                 paused = False
                 ob_gen.obstacles.clear()
+                game_over_screen = True
+                game_over_time = pygame.time.get_ticks()
 
         ob_gen.draw(screen)
         player.draw(screen)
@@ -113,9 +134,12 @@ while running:
         if paused:
             interface.show_pause()
 
+        # MODIFIÉ
         if not player.alive:
             interface.show_game_over()
-            lobby.inMenu = True
+            if pygame.time.get_ticks() - game_over_time >= GAME_OVER_DELAY_MS:
+                lobby.inMenu = True
+                game_over_screen = False
 
     pygame.display.flip()
     clock.tick(60)
