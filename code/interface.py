@@ -10,22 +10,23 @@ class Interface:
         self.color_white = (255, 255, 255)
         self.color_gold = (255, 215, 0)
         self.color_red = (250, 50, 50)
-        self.overlay_color = (0, 0, 0, 150)  # Noir transparent
 
     def show_score(self, score):
-        score_surf = self.font_main.render(f"Score: {score}", True, self.color_white) 
-        self.screen.blit(score_surf, (25, 25))
+              score_surf = self.font_main.render(f"Score:{score}", True, self.color_white) 
+              self.screen.blit(score_surf,(25,25))
+              print("score") 
 
     def show_best_score(self, best_score):
-        best_surf = self.font_main.render(f"Best: {best_score}", True, self.color_gold)
-        rect = best_surf.get_rect(topright=(self.screen.get_width() - 25, 25))
-        self.screen.blit(best_surf, rect)
+            best_surf = self.font_main.render(f"Best: {best_score}", True, self.color_gold)
+            rect = best_surf.get_rect(topright=(self.screen.get_width() - 25, 25))
+            self.screen.blit(best_surf, rect)
+            print("best score")
 
     def draw_overlay(self):
         """Ajoute un voile sombre derriere le texte de pause et de fin de partie."""
         overlay = pygame.Surface((self.screen.get_width(), self.screen.get_height()), pygame.SRCALPHA)
         overlay.fill(self.overlay_color)
-        self.screen.blit(overlay, (0, 0))
+        self.screen.blit("black", (0, 0))
 
     def show_pause(self):
         self.draw_overlay()
