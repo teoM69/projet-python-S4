@@ -155,8 +155,7 @@ while running:
         visual_fx.update_and_draw(screen)
         player.draw(screen)
 
-        interface.show_score(game.score)
-        interface.show_best_score(game.bestScore)
+        interface.show_score(game.score, game.bestScore)
 
         if paused:
             interface.show_pause()
