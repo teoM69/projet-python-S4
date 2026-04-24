@@ -24,15 +24,30 @@ class Game:
         # self.player.spawn()
         # self.world.obstacles = []
         # self.sounds.playBackgroundMusic()
-    def end(self):
-        if self.score > self.bestScore:
-            self.bestScore = self.score  # a modifier
 
     def loadFile(self):
         if not os.path.exists("scores.json"):
             return {"global_best": 0, "personal_bests": {}}
         with open("scores.json", "r") as f:
             return json.load(f)
+        
+    def saveScores(self, data):
+        with open("scores.json", "w") as f:
+            json.dump(data, f, indent=4)
+
+    def end(self):
+        data = self.loadFile()
+        has_changed = False
+        if self.score > self.bestScore:
+            data["global_best"] = self.score
+            self.bestScore = self.score
+            has_changed = True
+        if self.score > self.personalBest:
+            data["personal_bests"][self.name] = self.score
+            self.personalBest = self.score
+            has_changed = True
+        if has_changed:
+            self.saveScores(data)
 
     def getBestScore(self, data):
         return data["global_best"]
