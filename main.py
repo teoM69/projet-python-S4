@@ -72,7 +72,6 @@ lobby = Lobby(screen, game)
 interface = Interface(screen)
 visual_fx = VisualEffects()
 
-# Garde le joueur aligne sur la ligne de sol initiale avec la hauteur actuelle du sprite.
 player = Player("player", 100, screen.get_height() - 50 - 165 - 55)
 ob_gen = ObstacleGenerator(screen.get_width(), screen.get_height())
 last_spawn = pygame.time.get_ticks()
@@ -82,6 +81,12 @@ run_start_time = pygame.time.get_ticks()
 death_time_ms = None
 game_state = STATE_MENU
 switch_request_until = 0
+
+# AJOUT
+game_over_screen = False
+game_over_time = 0
+GAME_OVER_DELAY_MS = 2500
+was_in_menu = True
 
 running = True
 
@@ -100,15 +105,20 @@ while running:
     if game_state == STATE_MENU:
         lobby.inMenu = True
         lobby.run(screen, events)
-        if not lobby.inMenu:
-            now = pygame.time.get_ticks()
-            run_start_time, last_spawn, spawn_interval = start_new_run(game, player, ob_gen, visual_fx, now)
-            paused = False
-            death_time_ms = None
-            switch_request_until = 0
-            game_state = STATE_PLAYING
-
+        was_in_menu = True
     else:
+        # RESET au moment où on quitte le menu
+        if was_in_menu:
+            player.alive = True
+            player.playerPosition.x = 100
+            player.playerPosition.y = screen.get_height() - 50 - 165 - 55
+            game.gameSpeed = 5.0
+            game.score = 0
+            run_start_time = pygame.time.get_ticks()
+            last_spawn = pygame.time.get_ticks()
+            game_over_screen = False
+            was_in_menu = False
+
         now = pygame.time.get_ticks()
 
         for event in events:
@@ -197,13 +207,13 @@ while running:
                     except ValueError:
                         pass
 
-            if not player.alive:
+            # MODIFIÉ
+            if not player.alive and not game_over_screen:
                 game.end()
                 paused = False
                 ob_gen.obstacles.clear()
-                if death_time_ms is None:
-                    death_time_ms = now
-                game_state = STATE_GAME_OVER
+                game_over_screen = True
+                game_over_time = pygame.time.get_ticks()
 
         ob_gen.draw(screen)
         visual_fx.update_and_draw(screen)
@@ -214,17 +224,12 @@ while running:
         if game_state == STATE_PLAYING and paused:
             interface.show_pause()
 
-        if game_state == STATE_GAME_OVER:
-            if death_time_ms is None:
-                death_time_ms = now
-
-            dead_elapsed = now - death_time_ms
-            if dead_elapsed >= GAME_OVER_DELAY_MS:
-                interface.show_game_over()
-
-            if GAME_OVER_RETURN_LOBBY_MS is not None and dead_elapsed >= GAME_OVER_RETURN_LOBBY_MS:
+        # MODIFIÉ
+        if not player.alive:
+            interface.show_game_over()
+            if pygame.time.get_ticks() - game_over_time >= GAME_OVER_DELAY_MS:
                 lobby.inMenu = True
-                game_state = STATE_MENU
+                game_over_screen = False
 
     pygame.display.flip()
 
