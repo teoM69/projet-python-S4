@@ -103,9 +103,11 @@ while running:
     screen.fill((0, 0, 0))
 
     if game_state == STATE_MENU:
-        lobby.inMenu = True
         lobby.run(screen, events)
-        was_in_menu = True
+        if not lobby.inMenu:
+            game_state = STATE_PLAYING
+            lobby.run(screen, events)
+            was_in_menu = True
     else:
         # RESET au moment où on quitte le menu
         if was_in_menu:
