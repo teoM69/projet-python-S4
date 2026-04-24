@@ -37,7 +37,7 @@ screen = pygame.display.set_mode((1000, 700))
 clock = pygame.time.Clock()
 
 game = Game(screen)
-lobby = Lobby(screen)
+lobby = Lobby(screen, game)
 interface = Interface(screen)
 visual_fx = VisualEffects()
 

@@ -1,12 +1,13 @@
 import pygame
 
 class Lobby:
-    def __init__(self, screen):
+    def __init__(self, screen, game):
         self.inMenu = True
         self.changingName = False
         self.name = "test"
         self.font = pygame.font.Font(None, 74)
         self.showError = False
+        self.game = game
 
     def run(self, screen, events):
         if self.changingName == False:
@@ -28,6 +29,8 @@ class Lobby:
                 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
+                        self.game.name = self.name
+                        self.game.setScores()
                         self.inMenu = False
                     if event.key == pygame.K_ESCAPE:
                         pygame.quit()
