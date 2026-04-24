@@ -16,8 +16,8 @@ class ObstacleGenerator:
 
     def _spawn_x(self):
         x = self.screen_width
-        # Keep a minimum horizontal spacing near the spawn edge to avoid
-        # stacked obstacles appearing at odd positions.
+        # Conserve un espacement horizontal minimum pres du point d'apparition pour eviter
+        # que des obstacles empiles apparaissent dans des positions bizarres.
         if self.obstacles:
             rightmost = max(ob.rect.right for ob in self.obstacles)
             min_gap = random.randint(80, 160)
@@ -58,7 +58,7 @@ class ObstacleGenerator:
         elif lane == "middle" and middle_lane_y is not None:
             y = middle_lane_y - h
         else:
-            # align obstacle bottom to top of bottom wall
+            # Aligne le bas de l'obstacle sur le haut du mur du bas.
             y = floor_y - h
 
         y = self._clamp_y(y, h)

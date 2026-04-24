@@ -4,24 +4,24 @@ from code.constants import OBSTACLE_DEFAULT_SIZE
 
 
 class Player:
-    """Unified Player class: provides the simple API expected by obstacles
-    and also supports simple sprite animations if image files exist.
+    """Classe Joueur unifiee: fournit l'API attendue par les obstacles
+    et prend aussi en charge des animations de sprite simples si les images existent.
     """
     def __init__(self, nom, x, y):
         self.nom = nom
-        # gravity: direction and speed
+        # Gravite : direction et vitesse.
         self.gravity_direction = 1  # 1 = normal, -1 = inverted
         self.gravity_speed = 5
         self.is_flipping = False
         self.playerPosition = pygame.Vector2(x, y)
 
-        # size / hitbox
+        # Taille / hitbox.
         self.width = 55
         self.height = 55
         self.rect = pygame.Rect(int(x), int(y), self.width, self.height)
         self.alive = True
 
-        # --- safe image loading for animations ---
+        # --- chargement securise des images d'animation ---
         anim_dir = os.path.join('assets', 'Images', 'mov_animation')
 
         def safe_load(name):
@@ -32,7 +32,7 @@ class Player:
                     img = img.convert_alpha()
                 except Exception:
                     img = img.convert()
-                # scale to player size
+                # Redimensionne a la taille du joueur.
                 try:
                     img = pygame.transform.scale(img, (self.width, self.height))
                 except Exception:
@@ -43,7 +43,7 @@ class Player:
                 surf.fill((0, 255, 0))
                 return surf
 
-        # Prefer available animation files; fallback to solid surfaces
+        # Prefere les fichiers d'animation disponibles ; repli sur des surfaces unies.
         self.walk_normal = [safe_load('mov1_1.img.png'), safe_load('mov2_1.img.png'), safe_load('mov1_1.img.png')]
         self.walk_inverted = [safe_load('mov1_-1.img.png'), safe_load('mov2_-1.img.png'), safe_load('mov1_-1.img.png')]
         self.flip_imgs = [safe_load('flip1.img.png'), safe_load('flip2.img.png')]
@@ -54,12 +54,12 @@ class Player:
         self.trail_points = []
         self.max_trail_points = 10
 
-    # API methods required by obstacles / game
+    # Methodes d'API requises par les obstacles et le jeu.
     def update_rect(self):
         self.rect.topleft = (int(self.playerPosition.x), int(self.playerPosition.y))
 
     def take_damage(self, amount=1):
-        # simple: any damage kills player
+        # Simple : n'importe quel degat tue le joueur.
         self.alive = False
 
     def set_gravity(self, value):
@@ -70,7 +70,7 @@ class Player:
             pass
 
     def switchGravity(self):
-        # flip gravity and start flip animation
+        # Inverse la gravite et lance l'animation de bascule.
         self.gravity_direction *= -1
         self.is_flipping = True
         self.anim_index = 0
@@ -84,9 +84,9 @@ class Player:
         self.trail_points = []
         self.update_rect()
 
-    # movement / animation
+    # Deplacement / animation.
     def mov(self, floor_y=None, ceiling_y=None):
-        # animation timing
+        # Temporisation de l'animation.
         self.anim_timer += 1
         if self.anim_timer > 10:
             self.anim_index += 1
@@ -105,8 +105,8 @@ class Player:
             self.anim_index %= len(self.walk_inverted)
             self.current_image = self.walk_inverted[self.anim_index]
 
-        # Apply vertical movement with a small recovery tolerance to avoid
-        # occasional frame tunneling through thin/moving supports.
+        # Applique le mouvement vertical avec une petite tolerance de rattrapage pour eviter
+        # de traverser occasionnellement des supports fins ou mobiles.
         prev_y = self.playerPosition.y
         next_y = prev_y + (self.gravity_speed * self.gravity_direction)
         snap_tolerance = max(18, self.gravity_speed * 3)
@@ -147,5 +147,5 @@ class Player:
         pygame.draw.ellipse(aura, aura_color, aura.get_rect())
         screen.blit(aura, (self.rect.x - 12, self.rect.y - 12))
 
-        # blit current image at rect.topleft
+        # Affiche l'image courante a la position du rectangle.
         screen.blit(self.current_image, self.rect.topleft)

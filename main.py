@@ -22,7 +22,7 @@ game = Game(screen)
 lobby = Lobby(screen)
 interface = Interface(screen)
 
-# Keep player on the initial floor line with current sprite height.
+# Garde le joueur aligne sur la ligne de sol initiale avec la hauteur actuelle du sprite.
 player = Player("player", 100, screen.get_height() - 50 - 165 - 55)
 ob_gen = ObstacleGenerator(screen.get_width(), screen.get_height())
 last_spawn = pygame.time.get_ticks()

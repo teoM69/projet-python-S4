@@ -10,10 +10,10 @@ _IMAGE_NAMES = [
     'obstacle_push2.png',
 ]
 
-# Public list of obstacle types (filenames). Safe to import and use before images are loaded.
+# Liste publique des types d'obstacles (noms de fichiers). Importable sans charger les images.
 OBSTACLE_TYPES = list(_IMAGE_NAMES)
 
-# store paths and lazy-load images only when first needed (after pygame.init())
+# Stocke les chemins et charge les images paresseusement au premier besoin (apres pygame.init()).
 IMAGES = {}
 _IMAGE_PATHS = {}
 
@@ -37,8 +37,8 @@ for name in _IMAGE_NAMES:
 
 
 def ensure_images_loaded():
-    """Load images into IMAGES dict on first use. Safe to call any time; if
-    loading fails we fill with placeholder surfaces."""
+    """Charge les images dans le dictionnaire IMAGES au premier usage. Appelable a tout moment ;
+    en cas d'echec de chargement, des surfaces de remplacement sont creees."""
     if IMAGES:
         return
     for name in _IMAGE_NAMES:
@@ -63,7 +63,7 @@ def ensure_images_loaded():
 
 class Obstacle:
     def __init__(self, x, y, obstacleType, speed=0):
-        # ensure images are loaded (lazy-load after pygame.init())
+        # S'assure que les images sont chargees (chargement paresseux apres pygame.init()).
         try:
             ensure_images_loaded()
         except Exception:
@@ -72,7 +72,7 @@ class Obstacle:
         self.type = obstacleType
         self.image = IMAGES.get(obstacleType)
         if self.image is None:
-            # fallback
+            # Repli de secours.
             self.image = next(iter(IMAGES.values()))
         self.rect = self.image.get_rect(topleft=(int(x), int(y)))
         self.speed = speed
@@ -112,7 +112,7 @@ class Obstacle:
 
     def apply_effect(self, player):
         t = (self.type or '').lower()
-        # bomb => damage
+        # bombe => degats
         if 'bomb' in t:
             if hasattr(player, 'take_damage'):
                 try:
@@ -124,7 +124,7 @@ class Obstacle:
                     player.alive = False
                 except Exception:
                     pass
-        # push => flip gravity if available
+        # poussoir => inverse la gravite si possible
         if 'push' in t:
             if hasattr(player, 'switchGravity'):
                 try:

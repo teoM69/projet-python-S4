@@ -1,4 +1,4 @@
-# Shared constants for the game
+# Constantes partagees pour le jeu
 WALL_HEIGHT = 50
 PLATFORM_BOTTOM_OFFSET = 165
 OBSTACLE_DEFAULT_SIZE = (50, 50)

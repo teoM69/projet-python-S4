@@ -7,19 +7,19 @@ class Game:
         self.gameSpeed = 5.0
         self.difficulty = 1.0
         self.score = 0
-        self.bestScore = 0 #a modifier
+        self.bestScore = 0  # a modifier
         self.contactObstacleType = ""
         
         self.world = World(5, self.screen.get_width(), self.screen.get_height())
     def start(self):
-        #demarrer ou redemarrer
+        # Demarrer ou redemarrer
         self.inGame = True
         self.score = 0
         self.difficulty = 1.0
         self.gameSpeed = 5.0
-        #self.player.spawn()
-        #self.world.obstacles = []
-        #self.sounds.playBackgroundMusic()
+        # self.player.spawn()
+        # self.world.obstacles = []
+        # self.sounds.playBackgroundMusic()
     def end(self):
         if self.score > self.bestScore:
-            self.bestScore = self.score  #a modifier
+            self.bestScore = self.score  # a modifier
