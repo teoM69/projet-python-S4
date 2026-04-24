@@ -44,6 +44,7 @@ paused = False
 run_start_time = pygame.time.get_ticks()
 was_in_menu = lobby.inMenu
 pending_new_run = False
+dead_lobby_at = None
 
 running = True
 
@@ -67,6 +68,7 @@ while running:
             spawn_interval = random.randint(OBSTACLE_SPAWN_MIN_MS, OBSTACLE_SPAWN_MAX_MS)
             run_start_time = pygame.time.get_ticks()
             pending_new_run = False
+            dead_lobby_at = None
 
         now = pygame.time.get_ticks()
 
@@ -130,6 +132,8 @@ while running:
                 game.end()
                 paused = False
                 ob_gen.obstacles.clear()
+                if dead_lobby_at is None:
+                    dead_lobby_at = now + 1200
 
         ob_gen.draw(screen)
         player.draw(screen)
@@ -142,7 +146,9 @@ while running:
 
         if not player.alive:
             interface.show_game_over()
-            lobby.inMenu = True
+            if dead_lobby_at is not None and now >= dead_lobby_at:
+                lobby.inMenu = True
+                dead_lobby_at = None
 
     was_in_menu = lobby.inMenu
     pygame.display.flip()
