@@ -2,8 +2,7 @@ import pygame
 import sys
 
 class Lobby:
-    def __init__(self, screen):
-        self.screen = screen
+    def __init__(self, screen, game):
         self.inMenu = True
         self.changingName = False
         self.name = "Joueur 1"
@@ -12,6 +11,7 @@ class Lobby:
         self.font_title = pygame.font.Font(None, 80)
         self.font_medium = pygame.font.Font(None, 50)
         self.font_small = pygame.font.Font(None, 36)
+        self.game = game
         
         self.showError = False
         self.selected_mode = "arcade" # Mode par défaut

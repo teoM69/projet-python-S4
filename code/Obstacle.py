@@ -1,5 +1,6 @@
 import os
 import math
+from collections import deque
 import pygame
 from code.constants import OBSTACLE_DEFAULT_SIZE
 
@@ -10,10 +11,10 @@ _IMAGE_NAMES = [
     'obstacle_push2.png',
 ]
 
-# Public list of obstacle types (filenames). Safe to import and use before images are loaded.
+# Liste publique des types d'obstacles (noms de fichiers). Importable sans charger les images.
 OBSTACLE_TYPES = list(_IMAGE_NAMES)
 
-# store paths and lazy-load images only when first needed (after pygame.init())
+# Stocke les chemins et charge les images paresseusement au premier besoin (apres pygame.init()).
 IMAGES = {}
 _IMAGE_PATHS = {}
 
@@ -37,8 +38,8 @@ for name in _IMAGE_NAMES:
 
 
 def ensure_images_loaded():
-    """Load images into IMAGES dict on first use. Safe to call any time; if
-    loading fails we fill with placeholder surfaces."""
+    """Charge les images dans le dictionnaire IMAGES au premier usage. Appelable a tout moment ;
+    en cas d'echec de chargement, des surfaces de remplacement sont creees."""
     if IMAGES:
         return
     for name in _IMAGE_NAMES:
@@ -63,7 +64,7 @@ def ensure_images_loaded():
 
 class Obstacle:
     def __init__(self, x, y, obstacleType, speed=0):
-        # ensure images are loaded (lazy-load after pygame.init())
+        # S'assure que les images sont chargees (chargement paresseux apres pygame.init()).
         try:
             ensure_images_loaded()
         except Exception:
@@ -72,10 +73,12 @@ class Obstacle:
         self.type = obstacleType
         self.image = IMAGES.get(obstacleType)
         if self.image is None:
-            # fallback
+            # Repli de secours.
             self.image = next(iter(IMAGES.values()))
         self.rect = self.image.get_rect(topleft=(int(x), int(y)))
         self.speed = speed
+        self.spawn_time_ms = pygame.time.get_ticks()
+        self.trail = deque(maxlen=8)
 
     def move(self, speed):
         self.coord.x -= speed
@@ -84,8 +87,38 @@ class Obstacle:
     def update(self, speed=None):
         s = speed if speed is not None else self.speed
         self.move(s)
+        self.trail.append((self.rect.centerx, self.rect.centery))
 
     def draw(self, surface):
+        # Evite les effets couteux tant que l'obstacle est hors de l'ecran.
+        if self.rect.right < -80 or self.rect.left > surface.get_width() + 80:
+            return
+
+        now = pygame.time.get_ticks()
+        age_ms = now - self.spawn_time_ms
+
+        t = (self.type or '').lower()
+        if 'bomb' in t:
+            base_color = (255, 96, 96)
+            trail_color = (255, 120, 120)
+        elif 'push' in t:
+            base_color = (110, 205, 255)
+            trail_color = (130, 220, 255)
+        else:
+            base_color = (220, 220, 220)
+            trail_color = (220, 220, 220)
+
+        # Trainee lumineuse discrète pour mieux lire le mouvement.
+        trail_len = len(self.trail)
+        if trail_len > 1:
+            for idx, point in enumerate(self.trail):
+                ratio = (idx + 1) / trail_len
+                radius = int(2 + (4 * ratio))
+                alpha = int(15 + (65 * ratio))
+                glow = pygame.Surface((radius * 2 + 4, radius * 2 + 4), pygame.SRCALPHA)
+                pygame.draw.circle(glow, (trail_color[0], trail_color[1], trail_color[2], alpha), (radius + 2, radius + 2), radius)
+                surface.blit(glow, (point[0] - radius - 2, point[1] - radius - 2))
+
         shadow = pygame.Surface((self.rect.width + 10, self.rect.height + 10), pygame.SRCALPHA)
         pygame.draw.ellipse(
             shadow,
@@ -97,22 +130,24 @@ class Obstacle:
         surface.blit(self.image, self.rect)
 
         pulse = 0.5 + (0.5 * math.sin((pygame.time.get_ticks() * 0.012) + (self.rect.x * 0.04)))
-        t = (self.type or '').lower()
-        if 'bomb' in t:
-            color = (255, 90, 90, int(50 + (70 * pulse)))
-        elif 'push' in t:
-            color = (100, 195, 255, int(45 + (65 * pulse)))
-        else:
-            color = None
+        glow_alpha = int(55 + (85 * pulse))
+        glow = pygame.Surface((self.rect.width + 20, self.rect.height + 20), pygame.SRCALPHA)
+        pygame.draw.ellipse(glow, (base_color[0], base_color[1], base_color[2], glow_alpha), glow.get_rect(), width=3)
+        surface.blit(glow, (self.rect.x - 10, self.rect.y - 10))
 
-        if color is not None:
-            glow = pygame.Surface((self.rect.width + 18, self.rect.height + 18), pygame.SRCALPHA)
-            pygame.draw.ellipse(glow, color, glow.get_rect(), width=3)
-            surface.blit(glow, (self.rect.x - 9, self.rect.y - 9))
+        # Petit flash d'apparition pour eviter l'effet "pop" sec.
+        if age_ms < 240:
+            progress = age_ms / 240.0
+            ring_w = int(self.rect.width + 10 + (36 * progress))
+            ring_h = int(self.rect.height + 10 + (36 * progress))
+            ring_alpha = int(150 * (1.0 - progress))
+            ring = pygame.Surface((ring_w, ring_h), pygame.SRCALPHA)
+            pygame.draw.ellipse(ring, (base_color[0], base_color[1], base_color[2], ring_alpha), ring.get_rect(), width=2)
+            surface.blit(ring, (self.rect.centerx - (ring_w // 2), self.rect.centery - (ring_h // 2)))
 
     def apply_effect(self, player):
         t = (self.type or '').lower()
-        # bomb => damage
+        # bombe => degats
         if 'bomb' in t:
             if hasattr(player, 'take_damage'):
                 try:
@@ -124,7 +159,7 @@ class Obstacle:
                     player.alive = False
                 except Exception:
                     pass
-        # push => flip gravity if available
+        # poussoir => inverse la gravite si possible
         if 'push' in t:
             if hasattr(player, 'switchGravity'):
                 try:

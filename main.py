@@ -4,23 +4,73 @@ from code.game import Game
 from code.lobby import Lobby
 from code.Player import Player
 from code.ObstacleGenerator import ObstacleGenerator
-from code.constants import OBSTACLE_SPAWN_MIN_MS, OBSTACLE_SPAWN_MAX_MS
+from code.VisualEffects import VisualEffects
+from code.constants import (
+    OBSTACLE_SPAWN_MIN_MS,
+    OBSTACLE_SPAWN_MAX_MS,
+    GAME_SPEED_START,
+    GAME_SPEED_MAX,
+    GAME_SPEED_RAMP_DURATION_SEC,
+    GAME_SPEED_RAMP_EXPONENT,
+    OBSTACLE_SPEED_MULT_MIN,
+    OBSTACLE_SPEED_MULT_MAX,
+    SCORE_BASE_PER_SEC,
+    SCORE_SPEED_BONUS_FACTOR,
+    PLAYER_GRAVITY_SPEED,
+    PLAYER_GRAVITY_MAX,
+    PLAYER_GRAVITY_RAMP_DURATION_SEC,
+    PLAYER_GRAVITY_RAMP_EXPONENT,
+    PLAYER_RESPAWN_X,
+    PLAYER_OUT_OF_BOUNDS_MARGIN,
+    SWITCH_SUPPORT_SPAN_RATIO,
+    SWITCH_SUPPORT_SPAN_MAX,
+    SWITCH_SURFACE_TOLERANCE,
+    SWITCH_INPUT_BUFFER_MS,
+    GAME_OVER_DELAY_MS,
+    GAME_OVER_RETURN_LOBBY_MS,
+    STATE_MENU,
+    STATE_PLAYING,
+    STATE_GAME_OVER,
+    TARGET_FPS,
+    FRAME_SCALE_MIN,
+    FRAME_SCALE_MAX,
+)
 from code.interface import Interface
 
 
-def can_switch_on_surface(player, floor_y, ceiling_y):
-    on_floor = floor_y is not None and abs(player.playerPosition.y - (floor_y - player.height)) <= 2
-    on_ceiling = ceiling_y is not None and abs(player.playerPosition.y - ceiling_y) <= 2
+def can_switch_on_surface(player, floor_y, ceiling_y, tolerance=SWITCH_SURFACE_TOLERANCE):
+    on_floor = floor_y is not None and abs(player.playerPosition.y - (floor_y - player.height)) <= tolerance
+    on_ceiling = ceiling_y is not None and abs(player.playerPosition.y - ceiling_y) <= tolerance
     return on_floor or on_ceiling
 
 
+def start_new_run(game, player, obstacle_generator, visual_effects, now_ms):
+    # Remet a zero tous les etats qui doivent repartir pour une nouvelle partie.
+    game.start()
+    game.world.reset_structures()
+    spawn_y = game.world.floor_y - player.height
+    player.spawn(PLAYER_RESPAWN_X, spawn_y)
+    player.alive = True
+    player.gravity_direction = 1
+    player.gravity_speed = PLAYER_GRAVITY_SPEED
+    player.is_flipping = False
+    obstacle_generator.obstacles.clear()
+    visual_effects.clear()
+    spawn_interval = random.randint(OBSTACLE_SPAWN_MIN_MS, OBSTACLE_SPAWN_MAX_MS)
+    return now_ms, now_ms, spawn_interval
+
+
 pygame.init()
-screen = pygame.display.set_mode((1000, 700))
+try:
+    screen = pygame.display.set_mode((1000, 700), vsync=1)
+except TypeError:
+    screen = pygame.display.set_mode((1000, 700))
 clock = pygame.time.Clock()
 
 game = Game(screen)
-lobby = Lobby(screen)
+lobby = Lobby(screen, game)
 interface = Interface(screen)
+visual_fx = VisualEffects()
 
 player = Player("player", 100, screen.get_height() - 50 - 165 - 55)
 ob_gen = ObstacleGenerator(screen.get_width(), screen.get_height())
@@ -28,6 +78,9 @@ last_spawn = pygame.time.get_ticks()
 spawn_interval = random.randint(OBSTACLE_SPAWN_MIN_MS, OBSTACLE_SPAWN_MAX_MS)
 paused = False
 run_start_time = pygame.time.get_ticks()
+death_time_ms = None
+game_state = STATE_MENU
+switch_request_until = 0
 
 # AJOUT
 game_over_screen = False
@@ -38,6 +91,10 @@ was_in_menu = True
 running = True
 
 while running:
+    frame_ms = clock.tick(TARGET_FPS)
+    target_frame_ms = 1000.0 / TARGET_FPS
+    frame_scale = max(FRAME_SCALE_MIN, min(FRAME_SCALE_MAX, frame_ms / target_frame_ms))
+
     events = pygame.event.get()
     for event in events:
         if event.type == pygame.QUIT:
@@ -45,7 +102,8 @@ while running:
 
     screen.fill((0, 0, 0))
 
-    if lobby.inMenu:
+    if game_state == STATE_MENU:
+        lobby.inMenu = True
         lobby.run(screen, events)
         was_in_menu = True
     else:
@@ -65,52 +123,84 @@ while running:
 
         for event in events:
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    lobby.inMenu = True
-                elif event.key == pygame.K_p and player.alive:
-                    paused = not paused
-                elif event.key in (pygame.K_SPACE, pygame.K_UP) and player.alive and not paused:
-                    support_span = min(player.width * 0.8, 32)
-                    floor_y = game.world.find_floor_y(player.rect.centerx, support_span, player.rect.top)
-                    ceiling_y = game.world.find_ceiling_y(player.rect.centerx, support_span, player.rect.bottom)
-                    if can_switch_on_surface(player, floor_y, ceiling_y):
-                        player.switchGravity()
+                if game_state == STATE_GAME_OVER:
+                    if event.key == pygame.K_r:
+                        run_start_time, last_spawn, spawn_interval = start_new_run(game, player, ob_gen, visual_fx, now)
+                        lobby.inMenu = False
+                        death_time_ms = None
+                        paused = False
+                        game_state = STATE_PLAYING
+                    elif event.key in (pygame.K_ESCAPE, pygame.K_m):
+                        lobby.inMenu = True
+                        game_state = STATE_MENU
+                else:
+                    if event.key == pygame.K_ESCAPE:
+                        lobby.inMenu = True
+                        game_state = STATE_MENU
+                    elif event.key == pygame.K_p:
+                        paused = not paused
+                    elif event.key in (pygame.K_SPACE, pygame.K_UP) and not paused:
+                        switch_request_until = now + SWITCH_INPUT_BUFFER_MS
 
         game.world.drawBackGround(screen)
         game.world.drawWalls(screen)
 
-        if not paused and player.alive:
-            game.gameSpeed = min(9.0, game.gameSpeed + 0.0018)
-            game.world.update_structures(game.gameSpeed, min(1.0, (game.gameSpeed - 5.0) / 4.0))
+        if game_state == STATE_PLAYING and not paused and player.alive:
+            elapsed_s = (now - run_start_time) / 1000.0
+            ramp_ratio = min(1.0, elapsed_s / max(0.001, GAME_SPEED_RAMP_DURATION_SEC))
+            speed_curve = ramp_ratio ** GAME_SPEED_RAMP_EXPONENT
+            game.gameSpeed = GAME_SPEED_START + ((GAME_SPEED_MAX - GAME_SPEED_START) * speed_curve)
 
-        support_span = min(player.width * 0.8, 32)
+            gravity_ratio = min(1.0, elapsed_s / max(0.001, PLAYER_GRAVITY_RAMP_DURATION_SEC))
+            gravity_curve = gravity_ratio ** PLAYER_GRAVITY_RAMP_EXPONENT
+            player.gravity_speed = PLAYER_GRAVITY_SPEED + ((PLAYER_GRAVITY_MAX - PLAYER_GRAVITY_SPEED) * gravity_curve)
+
+            game.world.update_structures(
+                game.gameSpeed * frame_scale,
+                min(1.0, (game.gameSpeed - GAME_SPEED_START) / max(0.001, (GAME_SPEED_MAX - GAME_SPEED_START))),
+            )
+
+        support_span = min(player.width * SWITCH_SUPPORT_SPAN_RATIO, SWITCH_SUPPORT_SPAN_MAX)
         floor_y = game.world.find_floor_y(player.rect.centerx, support_span, player.rect.top)
         ceiling_y = game.world.find_ceiling_y(player.rect.centerx, support_span, player.rect.bottom)
 
-        if not paused and player.alive:
+        if game_state == STATE_PLAYING and not paused and player.alive:
+            if switch_request_until >= now and can_switch_on_surface(player, floor_y, ceiling_y):
+                player.switchGravity()
+                switch_request_until = 0
+            elif switch_request_until < now:
+                switch_request_until = 0
+
+        if game_state == STATE_PLAYING and not paused and player.alive:
             if now - last_spawn >= spawn_interval:
-                speed = game.gameSpeed * random.uniform(0.85, 1.2)
-                ob_gen.generate_obstacle(
+                speed = game.gameSpeed * random.uniform(OBSTACLE_SPEED_MULT_MIN, OBSTACLE_SPEED_MULT_MAX)
+                spawned = ob_gen.generate_obstacle(
                     None,
                     speed,
                     top_lane_y=game.world.roof_y,
                     bottom_lane_y=game.world.floor_y,
-                    middle_lane_y=game.world.get_middle_spawn_y(),
+                    middle_lane_y=game.world.get_middle_spawn_y(game.world.screen_width, 50),
+                    world=game.world,
                 )
-                last_spawn = now
-                spawn_interval = random.randint(OBSTACLE_SPAWN_MIN_MS, OBSTACLE_SPAWN_MAX_MS)
+                if spawned:
+                    last_spawn = now
+                    spawn_interval = random.randint(OBSTACLE_SPAWN_MIN_MS, OBSTACLE_SPAWN_MAX_MS)
 
             elapsed_s = (now - run_start_time) / 1000.0
-            speed_bonus = max(0.0, game.gameSpeed - 5.0) * 1.8
-            game.score = int((elapsed_s * 12) + (elapsed_s * speed_bonus))
-            ob_gen.update(game.gameSpeed)
-            player.mov(floor_y=floor_y, ceiling_y=ceiling_y)
+            speed_bonus = max(0.0, game.gameSpeed - GAME_SPEED_START) * SCORE_SPEED_BONUS_FACTOR
+            game.score = int((elapsed_s * SCORE_BASE_PER_SEC) + (elapsed_s * speed_bonus))
+            ob_gen.update(game.gameSpeed * frame_scale)
+            player.mov(floor_y=floor_y, ceiling_y=ceiling_y, time_scale=frame_scale)
 
-            if player.rect.top > screen.get_height() + 40 or player.rect.bottom < -40:
+            if (
+                player.rect.top > screen.get_height() + PLAYER_OUT_OF_BOUNDS_MARGIN
+                or player.rect.bottom < -PLAYER_OUT_OF_BOUNDS_MARGIN
+            ):
                 player.alive = False
 
             for ob in ob_gen.list_obstacles()[:]:
                 if player.rect.colliderect(ob.rect):
+                    visual_fx.spawn_for_obstacle(ob.type, ob.rect.center)
                     ob.apply_effect(player)
                     try:
                         ob_gen.obstacles.remove(ob)
@@ -126,12 +216,12 @@ while running:
                 game_over_time = pygame.time.get_ticks()
 
         ob_gen.draw(screen)
+        visual_fx.update_and_draw(screen)
         player.draw(screen)
 
-        interface.show_score(game.score)
-        interface.show_best_score(game.bestScore)
+        interface.show_score(game.score, game.bestScore)
 
-        if paused:
+        if game_state == STATE_PLAYING and paused:
             interface.show_pause()
 
         # MODIFIÉ
@@ -142,6 +232,5 @@ while running:
                 game_over_screen = False
 
     pygame.display.flip()
-    clock.tick(60)
 
 pygame.quit()
