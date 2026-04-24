@@ -212,8 +212,8 @@ class World:
     def _append_segment(self, lane):
         d = self.difficulty_ratio
         if lane == "top":
-            min_gap = int(58 + (48 * d))
-            max_gap = int(150 + (110 * d))
+            min_gap = int(45 + (40 * d))
+            max_gap = int(130 + (95 * d))
             min_width = int(260 - (85 * d))
             max_width = int(520 - (175 * d))
             min_height = 30
@@ -221,8 +221,8 @@ class World:
             structures = self.top_structures
             next_x = self._next_top_x
         elif lane == "bottom":
-            min_gap = int(58 + (48 * d))
-            max_gap = int(150 + (110 * d))
+            min_gap = int(45 + (40 * d))
+            max_gap = int(130 + (95 * d))
             min_width = int(260 - (85 * d))
             max_width = int(520 - (175 * d))
             min_height = 30
