@@ -14,6 +14,19 @@ def can_switch_on_surface(player, floor_y, ceiling_y):
     return on_floor or on_ceiling
 
 
+def start_new_run(game, player, obstacle_generator):
+    # Remet a zero tous les etats qui doivent repartir pour une nouvelle partie.
+    game.start()
+    game.world.reset_structures()
+    spawn_y = game.world.floor_y - player.height
+    player.spawn(100, spawn_y)
+    player.alive = True
+    player.gravity_direction = 1
+    player.gravity_speed = 5
+    player.is_flipping = False
+    obstacle_generator.obstacles.clear()
+
+
 pygame.init()
 screen = pygame.display.set_mode((1000, 700))
 clock = pygame.time.Clock()
@@ -29,6 +42,8 @@ last_spawn = pygame.time.get_ticks()
 spawn_interval = random.randint(OBSTACLE_SPAWN_MIN_MS, OBSTACLE_SPAWN_MAX_MS)
 paused = False
 run_start_time = pygame.time.get_ticks()
+was_in_menu = lobby.inMenu
+pending_new_run = False
 
 running = True
 
@@ -42,7 +57,17 @@ while running:
 
     if lobby.inMenu:
         lobby.run(screen, events)
+        if not lobby.inMenu:
+            pending_new_run = True
     else:
+        if was_in_menu or pending_new_run:
+            start_new_run(game, player, ob_gen)
+            paused = False
+            last_spawn = pygame.time.get_ticks()
+            spawn_interval = random.randint(OBSTACLE_SPAWN_MIN_MS, OBSTACLE_SPAWN_MAX_MS)
+            run_start_time = pygame.time.get_ticks()
+            pending_new_run = False
+
         now = pygame.time.get_ticks()
 
         for event in events:
@@ -72,15 +97,17 @@ while running:
         if not paused and player.alive:
             if now - last_spawn >= spawn_interval:
                 speed = game.gameSpeed * random.uniform(0.85, 1.2)
-                ob_gen.generate_obstacle(
+                spawned = ob_gen.generate_obstacle(
                     None,
                     speed,
                     top_lane_y=game.world.roof_y,
                     bottom_lane_y=game.world.floor_y,
-                    middle_lane_y=game.world.get_middle_spawn_y(),
+                    middle_lane_y=game.world.get_middle_spawn_y(game.world.screen_width, 50),
+                    world=game.world,
                 )
-                last_spawn = now
-                spawn_interval = random.randint(OBSTACLE_SPAWN_MIN_MS, OBSTACLE_SPAWN_MAX_MS)
+                if spawned:
+                    last_spawn = now
+                    spawn_interval = random.randint(OBSTACLE_SPAWN_MIN_MS, OBSTACLE_SPAWN_MAX_MS)
 
             elapsed_s = (now - run_start_time) / 1000.0
             speed_bonus = max(0.0, game.gameSpeed - 5.0) * 1.8
@@ -117,6 +144,7 @@ while running:
             interface.show_game_over()
             lobby.inMenu = True
 
+    was_in_menu = lobby.inMenu
     pygame.display.flip()
     clock.tick(60)
 

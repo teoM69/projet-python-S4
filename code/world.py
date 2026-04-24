@@ -230,8 +230,8 @@ class World:
             structures = self.bottom_structures
             next_x = self._next_bottom_x
         else:
-            min_gap = int(120 + (120 * d))
-            max_gap = int(260 + (180 * d))
+            min_gap = int(90 + (80 * d))
+            max_gap = int(180 + (120 * d))
             min_width = int(120 - (20 * d))
             max_width = int(240 - (50 * d))
             min_height = 22
@@ -250,8 +250,8 @@ class World:
 
         x = next_x + gap
         if lane == "middle":
-            # Garde des plateformes centrales presentes, mais evite de saturer le couloir.
-            if self._rng.random() < (0.45 + (0.25 * d)):
+            # Garde des plateformes centrales presentes en plus grande quantite, mais evite de saturer le couloir.
+            if self._rng.random() < (0.20 + (0.15 * d)):
                 self._next_middle_x = x + self._rng.randint(140, 300)
                 return
             mid_min, mid_max = self._middle_band()
@@ -292,12 +292,51 @@ class World:
         while self._next_middle_x < self.screen_width + 300:
             self._append_segment("middle")
 
-    def get_middle_spawn_y(self):
-        candidates = [s for s in self.middle_structures if s["x"] + s["w"] >= self.screen_width - 80]
+    def get_middle_spawn_y(self, x=None, span=1):
+        if x is None:
+            x = self.screen_width - 80
+        left = x - (span / 2)
+        right = x + (span / 2)
+        candidates = [s for s in self.middle_structures if right >= s["x"] and left <= s["x"] + s["w"]]
         if not candidates:
             return None
         seg = self._rng.choice(candidates)
         return seg["y"]
+
+    def get_spawn_lanes(self, x, span=1):
+        lanes = []
+
+        if self.has_support("top", x, span):
+            lanes.append(("top", self.roof_y))
+
+        if self.has_support("bottom", x, span):
+            lanes.append(("bottom", self.floor_y))
+
+        middle_y = self.get_middle_spawn_y(x, span)
+        if middle_y is not None:
+            lanes.append(("middle", middle_y))
+
+        return lanes
+
+    def get_spawn_targets(self, min_right_edge=None):
+        targets = []
+
+        if min_right_edge is None:
+            min_right_edge = self.screen_width + 180
+
+        for seg in self.top_structures:
+            if seg["x"] + seg["w"] >= min_right_edge:
+                targets.append(("top", seg["x"], seg["x"] + seg["w"], self.roof_y))
+
+        for seg in self.bottom_structures:
+            if seg["x"] + seg["w"] >= min_right_edge:
+                targets.append(("bottom", seg["x"], seg["x"] + seg["w"], self.floor_y))
+
+        for seg in self.middle_structures:
+            if seg["x"] + seg["w"] >= min_right_edge:
+                targets.append(("middle", seg["x"], seg["x"] + seg["w"], seg["y"]))
+
+        return targets
 
     def has_support(self, lane, x, span=1):
         if lane == "top":
