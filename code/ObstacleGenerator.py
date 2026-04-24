@@ -1,7 +1,16 @@
 import pygame
 import random
 from code.Obstacle import Obstacle, IMAGES, OBSTACLE_TYPES, ensure_images_loaded
-from code.constants import WALL_HEIGHT, PLATFORM_BOTTOM_OFFSET
+from code.constants import (
+    WALL_HEIGHT,
+    PLATFORM_BOTTOM_OFFSET,
+    OBSTACLE_SPAWN_X_OFFSET_MIN,
+    OBSTACLE_SPAWN_X_OFFSET_MAX,
+    OBSTACLE_SPAWN_GAP_MIN,
+    OBSTACLE_SPAWN_GAP_MAX,
+    OBSTACLE_WORLD_MIN_RIGHT_EDGE,
+    OBSTACLE_TYPE_WEIGHTS,
+)
 
 
 class ObstacleGenerator:
@@ -15,12 +24,12 @@ class ObstacleGenerator:
         return self.obstacles
 
     def _spawn_x(self):
-        x = self.screen_width + random.randint(180, 320)
+        x = self.screen_width + random.randint(OBSTACLE_SPAWN_X_OFFSET_MIN, OBSTACLE_SPAWN_X_OFFSET_MAX)
         # Conserve un espacement horizontal minimum pres du point d'apparition pour eviter
         # que des obstacles empiles apparaissent dans des positions bizarres.
         if self.obstacles:
             rightmost = max(ob.rect.right for ob in self.obstacles)
-            min_gap = random.randint(100, 180)
+            min_gap = random.randint(OBSTACLE_SPAWN_GAP_MIN, OBSTACLE_SPAWN_GAP_MAX)
             x = max(x, rightmost + min_gap)
         return x
 
@@ -33,7 +42,7 @@ class ObstacleGenerator:
         # Les bombes sont plus frequentes que les obstacles de poussée.
         return random.choices(
             OBSTACLE_TYPES,
-            weights=[0.38, 0.24, 0.19, 0.19],
+            weights=OBSTACLE_TYPE_WEIGHTS,
             k=1,
         )[0]
 
@@ -49,7 +58,7 @@ class ObstacleGenerator:
 
         supported_lanes = []
         if world is not None:
-            supported_lanes = world.get_spawn_targets(min_right_edge=self.screen_width + 220)
+            supported_lanes = world.get_spawn_targets(min_right_edge=self.screen_width + OBSTACLE_WORLD_MIN_RIGHT_EDGE)
         else:
             supported_lanes = [
                 ("top", 0, self.screen_width, top_lane_y if top_lane_y is not None else WALL_HEIGHT),
@@ -75,7 +84,7 @@ class ObstacleGenerator:
             lane_left, lane_right, lane_y = supported_lanes[0][1], supported_lanes[0][2], supported_lanes[0][3]
 
         if world is not None:
-            x_min = int(max(self.screen_width + 220, lane_left))
+            x_min = int(max(self.screen_width + OBSTACLE_WORLD_MIN_RIGHT_EDGE, lane_left))
             x_max = int(max(x_min, lane_right - max(1, h)))
             if x_max <= x_min:
                 return False

@@ -90,6 +90,10 @@ class Obstacle:
         self.trail.append((self.rect.centerx, self.rect.centery))
 
     def draw(self, surface):
+        # Evite les effets couteux tant que l'obstacle est hors de l'ecran.
+        if self.rect.right < -80 or self.rect.left > surface.get_width() + 80:
+            return
+
         now = pygame.time.get_ticks()
         age_ms = now - self.spawn_time_ms
 

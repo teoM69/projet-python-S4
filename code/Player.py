@@ -85,9 +85,9 @@ class Player:
         self.update_rect()
 
     # Deplacement / animation.
-    def mov(self, floor_y=None, ceiling_y=None):
+    def mov(self, floor_y=None, ceiling_y=None, time_scale=1.0):
         # Temporisation de l'animation.
-        self.anim_timer += 1
+        self.anim_timer += time_scale
         if self.anim_timer > 10:
             self.anim_index += 1
             self.anim_timer = 0
@@ -108,8 +108,9 @@ class Player:
         # Applique le mouvement vertical avec une petite tolerance de rattrapage pour eviter
         # de traverser occasionnellement des supports fins ou mobiles.
         prev_y = self.playerPosition.y
-        next_y = prev_y + (self.gravity_speed * self.gravity_direction)
-        snap_tolerance = max(18, self.gravity_speed * 3)
+        vertical_step = self.gravity_speed * max(0.5, time_scale)
+        next_y = prev_y + (vertical_step * self.gravity_direction)
+        snap_tolerance = max(18, vertical_step * 3)
 
         if self.gravity_direction < 0 and ceiling_y is not None:
             min_y = ceiling_y
