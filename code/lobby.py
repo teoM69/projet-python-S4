@@ -73,6 +73,8 @@ class Lobby:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     if self.name.strip() != "":
+                        self.game.name = self.name
+                        self.game.setScores()
                         self.inMenu = False
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
