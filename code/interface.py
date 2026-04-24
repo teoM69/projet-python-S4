@@ -21,6 +21,7 @@ class Interface:
         best_surf = self.font_main.render(f"Best: {best_score}", True, self.color_gold)
         rect = best_surf.get_rect(topright=(self.screen.get_width() - 25, 25))
         self.screen.blit(best_surf, rect)
+        print("score")
 
     def draw_overlay(self):
         overlay = pygame.Surface((self.screen.get_width(), self.screen.get_height()), pygame.SRCALPHA)
