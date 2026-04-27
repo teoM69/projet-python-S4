@@ -62,6 +62,7 @@ def build_players(mode, screen_height):
     """Construit la liste des joueurs actifs selon le mode selectionne."""
     spawn_y = screen_height - 50 - 165 - 55
     players = [Player(PLAYER_RESPAWN_X, spawn_y)]
+    lobby.name = players[0].nom
     if mode == "duo":
         players.append(Player(PLAYER_RESPAWN_X + 80, spawn_y))
     return players
