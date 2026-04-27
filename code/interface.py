@@ -37,22 +37,62 @@ class Interface:
         # Cache de messages generiques (titre + hint + couleur) pour eviter rerender.
         self._message_cache = {}
 
+ ##"""Dessine le score courant et le meilleur score en haut a droite dans un rectangle."""
     def show_score(self, score, best_score):
-        """Dessine le score courant et le meilleur score en haut de l'ecran."""
-        # score en haut à gauche
         if score != self._cached_score:
             self._cached_score = score
-            self._score_surf = self.font_main.render(f"Score: {score}", True, self.color_white)
-        if self._score_surf is not None:
-            self.screen.blit(self._score_surf, (25, 25))
-
-        # best score en haut à droite
+            self._score_surf = self.font_main.render(f"  {score}", True, self.color_white)
         if best_score != self._cached_best:
             self._cached_best = best_score
-            self._best_surf = self.font_main.render(f"Best: {best_score}", True, self.color_gold)
-            self._best_rect = self._best_surf.get_rect(topright=(self.screen.get_width() - 25, 25))
-        if self._best_surf is not None and self._best_rect is not None:
-            self.screen.blit(self._best_surf, self._best_rect)
+            self._best_surf = self.font_main.render(f"  {best_score}", True, self.color_gold)
+        if self._score_surf is None or self._best_surf is None:
+            return
+        label_score = self.font_small.render("SCORE", True, (180, 180, 180))
+        label_best = self.font_small.render("MEILLEUR", True, (255, 200, 0))
+        padding = 18
+        spacing = 10
+        separator = 1
+        inner_width = max(
+              self._score_surf.get_width(), self._best_surf.get_width(),
+                label_score.get_width(), label_best.get_width()
+                )
+        box_width = inner_width + padding * 2
+        box_height = (
+            label_best.get_height() + self._best_surf.get_height() +
+            spacing + separator + spacing +
+            label_score.get_height() + self._score_surf.get_height() +
+            padding * 2
+            )
+        box_x = self.screen.get_width() - box_width - 20
+        box_y = 20
+        box_surf = pygame.Surface((box_width, box_height), pygame.SRCALPHA) # Fond principal semi-transparent
+        
+        for i in range(box_height):
+            alpha = int(180 - (i / box_height) * 60) # Fond dégradé simulé avec plusieurs rectangles
+            pygame.draw.line(box_surf, (10, 10, 30, alpha), (0, i), (box_width, i))
+            
+        pygame.draw.rect(box_surf, (255, 200, 0, 60), (0, 0, box_width, box_height), border_radius=12)# Bordure arrondie dorée
+        pygame.draw.rect(box_surf, (255, 200, 0, 120), (0, 0, box_width, box_height), width=2, border_radius=12)
+        self.screen.blit(box_surf, (box_x, box_y))
+        sep_y = box_y + padding + label_best.get_height() + self._best_surf.get_height() + spacing# Ligne de séparation dorée au milieu
+        pygame.draw.line(
+            self.screen, (255, 200, 0, 80),
+            (box_x + 10, sep_y),
+            (box_x + box_width - 10, sep_y),
+            1
+        )
+        cur_y = box_y + padding # Best score en haut
+        label_x = box_x + (box_width - label_best.get_width()) // 2
+        self.screen.blit(label_best, (label_x, cur_y))
+        cur_y += label_best.get_height() + 2
+        best_x = box_x + (box_width - self._best_surf.get_width()) // 2
+        self.screen.blit(self._best_surf, (best_x, cur_y))
+        cur_y = sep_y + spacing # Score en bas
+        label_x = box_x + (box_width - label_score.get_width()) // 2
+        self.screen.blit(label_score, (label_x, cur_y))
+        cur_y += label_score.get_height() + 2
+        score_x = box_x + (box_width - self._score_surf.get_width()) // 2
+        self.screen.blit(self._score_surf, (score_x, cur_y))
 
     def draw_overlay(self):
         """Dessine un voile sombre derriere les messages d'etat."""
