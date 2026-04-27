@@ -61,9 +61,9 @@ def can_switch_on_surface(player, floor_y, ceiling_y, tolerance=SWITCH_SURFACE_T
 def build_players(mode, screen_height):
     """Construit la liste des joueurs actifs selon le mode selectionne."""
     spawn_y = screen_height - 50 - 165 - 55
-    players = [Player("player 1", PLAYER_RESPAWN_X, spawn_y)]
+    players = [Player(PLAYER_RESPAWN_X, spawn_y)]
     if mode == "duo":
-        players.append(Player("player 2", PLAYER_RESPAWN_X + 80, spawn_y))
+        players.append(Player(PLAYER_RESPAWN_X + 80, spawn_y))
     return players
 
 
