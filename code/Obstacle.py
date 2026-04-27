@@ -4,6 +4,15 @@ from collections import deque
 import pygame
 from code.constants import OBSTACLE_DEFAULT_SIZE
 
+"""Definition des obstacles et de leurs effets visuels/gameplay.
+
+Ce module gere:
+- la resolution des assets d'obstacles,
+- un chargement paresseux des images,
+- le rendu (trail, glow, flash d'apparition),
+- l'application des effets sur le joueur lors des collisions.
+"""
+
 _IMAGE_NAMES = [
     'bomb.png',
     'double_bomb.png',
@@ -19,6 +28,7 @@ IMAGES = {}
 _IMAGE_PATHS = {}
 
 def _obstacles_dir():
+    """Trouve le dossier d'assets obstacles en tolerant plusieurs casses."""
     base = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     candidates = [
         os.path.join(base, 'assets', 'Images', 'obstacles'),
@@ -63,6 +73,7 @@ def ensure_images_loaded():
 
 
 class Obstacle:
+    """Instance d'obstacle active dans la partie."""
     def __init__(self, x, y, obstacleType, speed=0):
         # S'assure que les images sont chargees (chargement paresseux apres pygame.init()).
         try:
@@ -78,18 +89,22 @@ class Obstacle:
         self.rect = self.image.get_rect(topleft=(int(x), int(y)))
         self.speed = speed
         self.spawn_time_ms = pygame.time.get_ticks()
+        # Historique court de positions pour dessiner une trainee lisible.
         self.trail = deque(maxlen=8)
 
     def move(self, speed):
+        """Deplace horizontalement l'obstacle vers la gauche."""
         self.coord.x -= speed
         self.rect.x = int(self.coord.x)
 
     def update(self, speed=None):
+        """Met a jour la position et memorise un point de trail."""
         s = speed if speed is not None else self.speed
         self.move(s)
         self.trail.append((self.rect.centerx, self.rect.centery))
 
     def draw(self, surface):
+        """Dessine l'obstacle avec effets visuels contextuels selon son type."""
         # Evite les effets couteux tant que l'obstacle est hors de l'ecran.
         if self.rect.right < -80 or self.rect.left > surface.get_width() + 80:
             return
@@ -129,6 +144,7 @@ class Obstacle:
 
         surface.blit(self.image, self.rect)
 
+        # Halo pulse pour rendre la lecture de danger plus immediate.
         pulse = 0.5 + (0.5 * math.sin((pygame.time.get_ticks() * 0.012) + (self.rect.x * 0.04)))
         glow_alpha = int(55 + (85 * pulse))
         glow = pygame.Surface((self.rect.width + 20, self.rect.height + 20), pygame.SRCALPHA)
@@ -146,6 +162,7 @@ class Obstacle:
             surface.blit(ring, (self.rect.centerx - (ring_w // 2), self.rect.centery - (ring_h // 2)))
 
     def apply_effect(self, player):
+        """Applique l'effet gameplay de l'obstacle sur le joueur touche."""
         t = (self.type or '').lower()
         # bombe => degats
         if 'bomb' in t:

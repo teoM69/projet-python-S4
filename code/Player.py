@@ -2,6 +2,15 @@ import os
 import pygame
 from code.constants import OBSTACLE_DEFAULT_SIZE
 
+"""Module joueur.
+
+Expose une classe Player compatible avec les obstacles et la boucle principale:
+- gravite normale/inversee,
+- animations simples (marche + flip),
+- deplacement contraint par sol/plafond dynamiques,
+- rendu avec traines et aura.
+"""
+
 
 class Player:
     """Classe Joueur unifiee: fournit l'API attendue par les obstacles
@@ -21,7 +30,8 @@ class Player:
         self.rect = pygame.Rect(int(x), int(y), self.width, self.height)
         self.alive = True
 
-        # --- chargement securise des images d'animation ---
+        # Chargement securise des images d'animation.
+        # Si un asset manque, une surface de secours est creee.
         anim_dir = os.path.join('assets', 'Images', 'mov_animation')
 
         def safe_load(name):
@@ -51,18 +61,23 @@ class Player:
         self.current_image = self.walk_normal[0]
         self.anim_index = 0
         self.anim_timer = 0
+
+        # Historique visuel pour dessiner un effet de trainee.
         self.trail_points = []
         self.max_trail_points = 10
 
     # Methodes d'API requises par les obstacles et le jeu.
     def update_rect(self):
+        """Synchronise la hitbox pygame avec la position flottante."""
         self.rect.topleft = (int(self.playerPosition.x), int(self.playerPosition.y))
 
     def take_damage(self, amount=1):
+        """Interface de degats: ici tout degat est fatal."""
         # Simple : n'importe quel degat tue le joueur.
         self.alive = False
 
     def set_gravity(self, value):
+        """Force la gravite a partir d'une valeur signee."""
         try:
             self.gravity_speed = abs(value)
             self.gravity_direction = 1 if value >= 0 else -1
@@ -70,6 +85,7 @@ class Player:
             pass
 
     def switchGravity(self):
+        """Inverse la gravite et active l'animation de bascule."""
         # Inverse la gravite et lance l'animation de bascule.
         self.gravity_direction *= -1
         self.is_flipping = True
@@ -79,6 +95,7 @@ class Player:
         print('Player died')
 
     def spawn(self, x=None, y=None):
+        """Repositionne le joueur et remet son etat visuel a zero."""
         if x is not None and y is not None:
             self.playerPosition = pygame.Vector2(x, y)
         self.trail_points = []
@@ -86,6 +103,7 @@ class Player:
 
     # Deplacement / animation.
     def mov(self, floor_y=None, ceiling_y=None, time_scale=1.0):
+        """Met a jour animation + physique verticale avec contraintes support."""
         # Temporisation de l'animation.
         self.anim_timer += time_scale
         if self.anim_timer > 10:
@@ -127,11 +145,13 @@ class Player:
         self.playerPosition.y = next_y
         self.update_rect()
 
+        # Ajoute la position courante dans le buffer de trail (taille bornée).
         self.trail_points.append((self.rect.centerx, self.rect.centery, self.gravity_direction))
         if len(self.trail_points) > self.max_trail_points:
             self.trail_points.pop(0)
 
     def draw(self, screen):
+        """Dessine le joueur avec trail et aura de gravite."""
         trail_len = len(self.trail_points)
         if trail_len > 1:
             for idx, point in enumerate(self.trail_points[:-1]):

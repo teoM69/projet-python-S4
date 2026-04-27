@@ -1,4 +1,6 @@
 {
-    "global_best": 0,
-    "personal_bests": {}
+    "global_best": 199,
+    "personal_bests": {
+        "Joueur 1": 199
+    }
 }

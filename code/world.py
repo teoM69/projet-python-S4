@@ -2,8 +2,18 @@ import os
 import random
 import pygame
 
+"""Gestion du monde de jeu (decor, supports et ambiance).
+
+Ce module pilote:
+- la generation procedurale des segments top/bottom/middle,
+- la detection de supports (sol/plafond),
+- les cibles de spawn d'obstacles,
+- le rendu visuel du decor et des effets d'ambiance.
+"""
+
 
 def _lerp_color(color_a, color_b, t):
+    """Interpolation lineaire de deux couleurs RGB."""
     t = max(0.0, min(1.0, t))
     return (
         int(color_a[0] + (color_b[0] - color_a[0]) * t),
@@ -13,6 +23,7 @@ def _lerp_color(color_a, color_b, t):
 
 
 class World:
+    """Represente l'espace de jeu defilant."""
     def __init__(self, speed, screen_width, screen_height):
         self.speed = speed
         self.wallHeight = 42
@@ -20,7 +31,7 @@ class World:
         self.screen_width = screen_width
         self.screen_height = screen_height
 
-        # === GEOMETRIE DE L'ECRAN ===
+        # Geometrie de base de l'ecran.
         # Calcule les positions du plafond et du sol.
         # Le plafond est situe a environ 25 % du haut de l'ecran (75 % du bas).
         # Cela cree le couloir superieur ou les obstacles peuvent apparaitre.
@@ -60,6 +71,7 @@ class World:
         self.reset_structures()
 
     def _build_gradient_overlay(self):
+        """Construit un voile de gradient couleur pour enrichir l'arriere-plan."""
         overlay = pygame.Surface((self.screen_width, self.screen_height), pygame.SRCALPHA)
         top_color = (8, 22, 52)
         bottom_color = (38, 15, 40)
@@ -71,12 +83,14 @@ class World:
         return overlay
 
     def _build_scanline_overlay(self):
+        """Construit un effet scanline subtil (style ecran)."""
         overlay = pygame.Surface((self.screen_width, self.screen_height), pygame.SRCALPHA)
         for y in range(0, self.screen_height, 4):
             pygame.draw.line(overlay, (255, 255, 255, 12), (0, y), (self.screen_width, y))
         return overlay
 
     def _build_vignette_overlay(self):
+        """Construit une vignette sombre sur les bords pour focaliser le centre."""
         overlay = pygame.Surface((self.screen_width, self.screen_height), pygame.SRCALPHA)
         border = min(self.screen_width, self.screen_height) // 2
         for i in range(0, border, 10):
@@ -89,6 +103,7 @@ class World:
         return overlay
 
     def _build_particles(self, count):
+        """Initialise des particules d'ambiance (poussiere lumineuse)."""
         particles = []
         for _ in range(count):
             particles.append(
@@ -103,6 +118,7 @@ class World:
         return particles
 
     def _build_light_columns(self, count):
+        """Initialise des colonnes lumineuses en mouvement lent."""
         columns = []
         for _ in range(count):
             width = self._rng.randint(90, 190)
@@ -117,6 +133,7 @@ class World:
         return columns
 
     def _update_ambient(self, speed):
+        """Met a jour les elements d'ambiance selon la vitesse de jeu."""
         self.parallax_x = (self.parallax_x + (speed * 0.5)) % self.screen_width
 
         for particle in self._particles:
@@ -135,6 +152,7 @@ class World:
                 column["speed"] = self._rng.uniform(0.08, 0.2)
 
     def _draw_segment(self, screen, rect, body_color, inner_color, edge_color, glow_color, contact_edge):
+        """Dessine un segment de support (ombre, corps, contour, lueur)."""
         shadow = rect.move(0, 4)
         pygame.draw.rect(screen, (8, 8, 12), shadow, border_radius=8)
         pygame.draw.rect(screen, body_color, rect, border_radius=8)
@@ -156,6 +174,7 @@ class World:
         screen.blit(glow, (rect.x, glow_y))
 
     def _draw_middle_segment(self, screen, rect):
+        """Dessine un segment central avec style visuel dedie."""
         self._draw_segment(
             screen,
             rect,
@@ -170,6 +189,7 @@ class World:
         screen.blit(glow, (rect.x, rect.bottom - 4))
 
     def _draw_ambient(self, screen):
+        """Rend les colonnes lumineuses et particules sur une surface alpha."""
         self._fx_surface.fill((0, 0, 0, 0))
 
         for column in self._light_columns:
@@ -190,6 +210,7 @@ class World:
         screen.blit(self._fx_surface, (0, 0))
 
     def reset_structures(self):
+        """Reinitialise les structures defilantes pour un nouveau run."""
         self.top_structures = [{"x": -120, "w": self.screen_width + 280, "h": self.wallHeight}]
         self.bottom_structures = [{"x": -120, "w": self.screen_width + 280, "h": self.wallHeight}]
         self.middle_structures = []
@@ -198,7 +219,7 @@ class World:
         self._next_middle_x = self.screen_width + 420
 
     def _middle_band(self):
-        # === ZONE DES PLATEFORMES CENTRALES ===
+        # Zone verticale reservee aux plateformes centrales.
         # Defini la bande verticale ou les plateformes centrales peuvent apparaitre.
         # Limite haute : sous le plafond (roof_y + 80).
         # Limite basse : au-dessus du sol (floor_y - 95).
@@ -210,6 +231,7 @@ class World:
         return top_limit, bottom_limit
 
     def _append_segment(self, lane):
+        """Ajoute un segment procedurally sur la lane demandee."""
         d = self.difficulty_ratio
         if lane == "top":
             min_gap = int(45 + (40 * d))
@@ -268,6 +290,7 @@ class World:
             self._next_middle_x = x + width
 
     def update_structures(self, speed, difficulty_ratio=0.0):
+        """Fait defiler les structures, en retire, puis regenere ce qui manque."""
         self.difficulty_ratio = max(0.0, min(1.0, difficulty_ratio))
         self._update_ambient(speed)
         self._next_top_x -= speed
@@ -293,6 +316,7 @@ class World:
             self._append_segment("middle")
 
     def get_middle_spawn_y(self, x=None, span=1):
+        """Retourne un Y de spawn sur plateforme centrale recouvrant la zone [x-span/2, x+span/2]."""
         if x is None:
             x = self.screen_width - 80
         left = x - (span / 2)
@@ -304,6 +328,7 @@ class World:
         return seg["y"]
 
     def get_spawn_lanes(self, x, span=1):
+        """Retourne les lanes spawnables autour d'un X donne."""
         lanes = []
 
         if self.has_support("top", x, span):
@@ -319,6 +344,7 @@ class World:
         return lanes
 
     def get_spawn_targets(self, min_right_edge=None):
+        """Liste les segments eligibles au spawn selon une contrainte de bord droit."""
         targets = []
 
         if min_right_edge is None:
@@ -339,6 +365,7 @@ class World:
         return targets
 
     def has_support(self, lane, x, span=1):
+        """Indique si une lane (top/bottom) possede un support sous la zone cible."""
         if lane == "top":
             structures = self.top_structures
         else:
@@ -354,6 +381,7 @@ class World:
         return False
 
     def find_floor_y(self, x, span, player_top):
+        """Calcule le support inferieur le plus proche sous le joueur."""
         left = x - (span / 2)
         right = x + (span / 2)
         candidates = []
@@ -371,6 +399,7 @@ class World:
         return min(candidates)
 
     def find_ceiling_y(self, x, span, player_bottom):
+        """Calcule le support superieur le plus proche au-dessus du joueur."""
         left = x - (span / 2)
         right = x + (span / 2)
         candidates = []
@@ -389,6 +418,7 @@ class World:
         return max(candidates)
 
     def drawBackGround(self, screen):
+        """Dessine le fond avec un leger effet de parallaxe."""
         if self.has_bg_image:
             offset = int(self.parallax_x * 0.3) % self.screen_width
             screen.blit(self.bg_image, (-offset, 0))
@@ -397,6 +427,7 @@ class World:
             screen.blit(self.bg_image, (0, 0))
 
     def drawWalls(self, screen):
+        """Dessine tous les supports jouables (haut, bas, milieu)."""
         for seg in self.top_structures:
             rect = pygame.Rect(int(seg["x"]), int(self.roof_y - seg["h"]), int(seg["w"]), int(seg["h"]))
             self._draw_segment(

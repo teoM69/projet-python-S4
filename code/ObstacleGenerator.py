@@ -14,6 +14,12 @@ from code.constants import (
 
 
 class ObstacleGenerator:
+    """Fabrique et met a jour les obstacles actifs.
+
+    Le generateur choisit un type d'obstacle, selectionne une lane valide,
+    calcule une position de spawn coherente avec le monde, puis conserve la
+    liste des obstacles a mettre a jour et dessiner.
+    """
     def __init__(self, screen_width, screen_height):
         self.screen_width = screen_width
         self.screen_height = screen_height
@@ -21,9 +27,11 @@ class ObstacleGenerator:
         self.spawn_interval = 1500
 
     def list_obstacles(self):
+        """Expose la liste courante des obstacles."""
         return self.obstacles
 
     def _spawn_x(self):
+        """Calcule une position X de spawn hors ecran avec espacement minimum."""
         x = self.screen_width + random.randint(OBSTACLE_SPAWN_X_OFFSET_MIN, OBSTACLE_SPAWN_X_OFFSET_MAX)
         # Conserve un espacement horizontal minimum pres du point d'apparition pour eviter
         # que des obstacles empiles apparaissent dans des positions bizarres.
@@ -34,11 +42,13 @@ class ObstacleGenerator:
         return x
 
     def _clamp_y(self, y, h):
+        """Contraint la coordonnee Y dans les limites de l'ecran."""
         min_y = 0
         max_y = max(0, self.screen_height - h)
         return max(min_y, min(max_y, int(y)))
 
     def _choose_obstacle_type(self):
+        """Tire un type d'obstacle selon une loi ponderee."""
         # Les bombes sont plus frequentes que les obstacles de poussée.
         return random.choices(
             OBSTACLE_TYPES,
@@ -47,6 +57,10 @@ class ObstacleGenerator:
         )[0]
 
     def generate_obstacle(self, obstacleType=None, speed=0, lane=None, top_lane_y=None, bottom_lane_y=None, middle_lane_y=None, world=None):
+        """Genere un obstacle sur une lane valide.
+
+        Retourne True si un obstacle est cree, False sinon (aucune lane valide).
+        """
         ensure_images_loaded()
 
         if obstacleType is None:
@@ -84,6 +98,7 @@ class ObstacleGenerator:
             lane_left, lane_right, lane_y = supported_lanes[0][1], supported_lanes[0][2], supported_lanes[0][3]
 
         if world is not None:
+            # Restreint le spawn a une zone situee a droite de l'ecran visible.
             x_min = int(max(self.screen_width + OBSTACLE_WORLD_MIN_RIGHT_EDGE, lane_left))
             x_max = int(max(x_min, lane_right - max(1, h)))
             if x_max <= x_min:
@@ -105,10 +120,12 @@ class ObstacleGenerator:
         return True
 
     def update(self, speed):
+        """Met a jour les obstacles et supprime ceux sortis de l'ecran."""
         for obstacle in self.obstacles:
             obstacle.update(speed)
         self.obstacles = [ob for ob in self.obstacles if ob.rect.right > 0]
 
     def draw(self, surface):
+        """Dessine tous les obstacles actifs."""
         for ob in self.obstacles:
             ob.draw(surface)
