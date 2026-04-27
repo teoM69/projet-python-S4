@@ -125,6 +125,9 @@ class Lobby:
         hint_exit = self.font_tiny.render("ECHAP pour quitter", True, (100, 110, 130))
         screen.blit(hint_exit, hint_exit.get_rect(center=(screen.get_width() // 2, panel_rect.bottom - 20)))
 
+        hint_mode = self.font_tiny.render("Fleches Gauche/Droite: changer le mode", True, (130, 145, 170))
+        screen.blit(hint_mode, hint_mode.get_rect(center=(screen.get_width() // 2, panel_rect.bottom - 5)))
+
         # Gestion des interactions souris/clavier.
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -141,6 +144,8 @@ class Lobby:
                         self.game.name = self.name
                         self.game.setScores()
                         self.inMenu = False
+                elif event.key in (pygame.K_LEFT, pygame.K_RIGHT):
+                    self.selected_mode = "duo" if self.selected_mode == "solo" else "solo"
                 elif event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     sys.exit()
