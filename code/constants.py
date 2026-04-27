@@ -21,7 +21,7 @@ STATE_GAME_OVER = "game_over"
 
 # Tuning global de la sensation "runner".
 GAME_SPEED_START = 5.0
-GAME_SPEED_MAX = 9.0
+GAME_SPEED_MAX = 12.0
 # Courbe de vitesse: lente au debut puis accelere de plus en plus.
 GAME_SPEED_RAMP_DURATION_SEC = 70.0
 GAME_SPEED_RAMP_EXPONENT = 1.75
