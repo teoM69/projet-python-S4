@@ -1,4 +1,5 @@
 import os
+import json
 import pygame
 from code.constants import OBSTACLE_DEFAULT_SIZE
 
@@ -16,8 +17,8 @@ class Player:
     """Classe Joueur unifiee: fournit l'API attendue par les obstacles
     et prend aussi en charge des animations de sprite simples si les images existent.
     """
-    def __init__(self, nom, x, y):
-        self.nom = nom
+    def __init__(self, x, y):
+        self.nom = self.getName()
         # Gravite : direction et vitesse.
         self.gravity_direction = 1  # 1 = normal, -1 = inverted
         self.gravity_speed = 5
@@ -66,6 +67,15 @@ class Player:
         # Historique visuel pour dessiner un effet de trainee.
         self.trail_points = []
         self.max_trail_points = 10
+
+    def getName(self):
+        data = 0
+        if not os.path.exists("scores.json"):
+            data = {"global_best": 0, "personal_bests": {}}
+        with open("scores.json", "r") as f:
+            data = json.load(f)
+        return data["last_name"]
+
 
     # Methodes d'API requises par les obstacles et le jeu.
     def update_rect(self):

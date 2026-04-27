@@ -315,7 +315,7 @@ while running:
         for player in players:
             player.draw(screen)
 
-        interface.show_score(game.score, game.bestScore)
+        interface.show_score(game.score, game.bestScore)#jai aussi modifier ca 
 
         if game_state == STATE_PLAYING and paused:
             interface.show_pause()

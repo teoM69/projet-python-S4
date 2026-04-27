@@ -48,29 +48,25 @@ class Game:
 
     def saveScores(self, data):
         """Ecrit les meilleurs scores sur disque avec une indentation lisible."""
+        
         with open("scores.json", "w") as f:
             json.dump(data, f, indent=4)
 
     def end(self):
         """Termine la partie et persiste les records battus si necessaire."""
         data = self.loadFile()
-        has_changed = False
-
         # Mise a jour du meilleur score global.
         if self.score > self.bestScore:
             data["global_best"] = self.score
             self.bestScore = self.score
-            has_changed = True
 
         # Mise a jour du meilleur score personnel pour le nom courant.
         if self.score > self.personalBest:
             data["personal_bests"][self.name] = self.score
             self.personalBest = self.score
-            has_changed = True
 
-        # Ecriture disque uniquement si une valeur a effectivement change.
-        if has_changed:
-            self.saveScores(data)
+        data["last_name"] = self.name
+        self.saveScores(data)
 
     def getBestScore(self, data):
         """Extrait le meilleur score global depuis la structure de persistance."""
