@@ -89,7 +89,6 @@ class Lobby:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     if self.name.strip() != "":
-                        # Synchronise le joueur courant et charge les records associes.
                         self.game.name = self.name
                         self.game.setScores()
                         self.inMenu = False

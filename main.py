@@ -122,16 +122,11 @@ while running:
     screen.fill((0, 0, 0))
 
     if game_state == STATE_MENU:
-        # Le lobby gere l'entree utilisateur et decide quand demarrer une partie.
-        lobby.inMenu = True
         lobby.run(screen, events)
         if not lobby.inMenu:
-            now = pygame.time.get_ticks()
-            run_start_time, last_spawn, spawn_interval = start_new_run(game, player, ob_gen, visual_fx, now)
-            paused = False
-            death_time_ms = None
-            switch_request_until = 0
             game_state = STATE_PLAYING
+            lobby.run(screen, events)
+            was_in_menu = True
     else:
         now = pygame.time.get_ticks()
 
