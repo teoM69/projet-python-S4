@@ -157,6 +157,9 @@ while running:
                         paused = not paused
                     elif event.key in (pygame.K_SPACE, pygame.K_UP) and not paused:
                         switch_request_until = now + SWITCH_INPUT_BUFFER_MS
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and game_state == STATE_PLAYING and not paused and player.alive:
+                player.switchGravity()
+                switch_request_until = 0
 
         game.world.drawBackGround(screen)
         game.world.drawWalls(screen)

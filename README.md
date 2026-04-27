@@ -81,7 +81,7 @@ python3 main.py
 
 ### En jeu
 
-- `Espace` ou `Flèche Haut`: inverser la gravité (si le joueur touche une surface)
+- `Espace`, `Flèche Haut` ou clic gauche: inverser la gravité (si le joueur touche une surface)
 - `P`: pause / reprise
 - `Échap`: retour au menu
 
