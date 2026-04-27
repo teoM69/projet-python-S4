@@ -1,3 +1,4 @@
+import os
 import pygame
 import sys
 
@@ -28,6 +29,38 @@ class Lobby:
     # Placeholder pour des variantes de jeu futures.
         self.selected_mode = "solo"
 
+        self.menu_bg = self._load_menu_background(screen)
+
+    def _load_menu_background(self, screen):
+        """Charge le fond du lobby fourni par l'utilisateur avec fallback robuste."""
+        bg_path = os.path.join("assets", "Images", "Menu-arriere-plan.png")
+        try:
+            image = pygame.image.load(bg_path).convert()
+            return pygame.transform.scale(image, (screen.get_width(), screen.get_height()))
+        except Exception:
+            fallback = pygame.Surface((screen.get_width(), screen.get_height()))
+            fallback.fill((12, 10, 28))
+            return fallback
+
+    def _draw_menu_background(self, screen):
+        """Dessine le fond puis un voile pour garantir la lisibilite du menu."""
+        if self.menu_bg.get_size() != (screen.get_width(), screen.get_height()):
+            self.menu_bg = pygame.transform.scale(self.menu_bg, (screen.get_width(), screen.get_height()))
+
+        screen.blit(self.menu_bg, (0, 0))
+
+        shade = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
+        shade.fill((6, 8, 18, 140))
+        screen.blit(shade, (0, 0))
+
+        top_band = pygame.Surface((screen.get_width(), 180), pygame.SRCALPHA)
+        top_band.fill((20, 36, 62, 120))
+        screen.blit(top_band, (0, 0))
+
+        bottom_band = pygame.Surface((screen.get_width(), 130), pygame.SRCALPHA)
+        bottom_band.fill((16, 12, 34, 110))
+        screen.blit(bottom_band, (0, screen.get_height() - 130))
+
     def run(self, screen, events):
         """Met a jour et dessine le lobby pour la frame courante."""
         if not self.changingName:
@@ -44,10 +77,8 @@ class Lobby:
         - section pseudo + bouton de modification,
         - consignes clavier.
         """
-        # Fond plus profond avec quelques accents visuels.
-        screen.fill((7, 10, 20))
-        pygame.draw.rect(screen, (16, 21, 38), pygame.Rect(0, 0, screen.get_width(), 140))
-        pygame.draw.rect(screen, (10, 13, 24), pygame.Rect(0, screen.get_height() - 95, screen.get_width(), 95))
+        # Fond image + voiles pour lisibilite.
+        self._draw_menu_background(screen)
 
         for bubble_x, bubble_y, radius, color in (
             (120, 92, 78, (74, 122, 220)),
@@ -60,47 +91,47 @@ class Lobby:
             screen.blit(glow, (bubble_x - radius - 8, bubble_y - radius - 8))
 
         # Panneau principal centré.
-        panel_width, panel_height = 720, 460
+        panel_width, panel_height = 760, 500
         panel_rect = pygame.Rect(
             (screen.get_width() - panel_width) // 2,
-            (screen.get_height() - panel_height) // 2,
+            (screen.get_height() - panel_height) // 2 + 6,
             panel_width,
             panel_height,
         )
 
         # Surface alpha: fond + contour pour un rendu plus lisible.
         panel_surface = pygame.Surface((panel_width, panel_height), pygame.SRCALPHA)
-        pygame.draw.rect(panel_surface, (10, 14, 26, 235), panel_surface.get_rect(), border_radius=26)
+        pygame.draw.rect(panel_surface, (8, 12, 24, 230), panel_surface.get_rect(), border_radius=28)
         pygame.draw.rect(panel_surface, (96, 144, 230, 255), panel_surface.get_rect(), width=3, border_radius=26)
-        inner_rect = panel_surface.get_rect().inflate(-18, -18)
-        pygame.draw.rect(panel_surface, (18, 24, 42, 185), inner_rect, border_radius=20)
+        inner_rect = panel_surface.get_rect().inflate(-20, -20)
+        pygame.draw.rect(panel_surface, (18, 24, 42, 195), inner_rect, border_radius=22)
         screen.blit(panel_surface, panel_rect.topleft)
 
         title_surf = self.font_title.render("GRAVITY RUNNER", True, (248, 250, 255))
-        title_rect = title_surf.get_rect(center=(screen.get_width() // 2, panel_rect.top + 56))
+        title_rect = title_surf.get_rect(center=(screen.get_width() // 2, panel_rect.top + 70))
         screen.blit(title_surf, title_rect)
 
         subtitle = self.font_small.render("Choisis ton mode puis lance la partie", True, (180, 190, 210))
-        screen.blit(subtitle, subtitle.get_rect(center=(screen.get_width() // 2, panel_rect.top + 98)))
+        screen.blit(subtitle, subtitle.get_rect(center=(screen.get_width() // 2, panel_rect.top + 110)))
 
         name_tag = self.font_small.render("JOUEUR", True, (155, 172, 196))
-        screen.blit(name_tag, name_tag.get_rect(center=(screen.get_width() // 2 - 110, panel_rect.top + 176)))
+        screen.blit(name_tag, name_tag.get_rect(center=(screen.get_width() // 2 - 120, panel_rect.top + 196)))
 
         name_label = self.font_medium.render(f"{self.name}", True, (255, 255, 255))
-        name_label_rect = name_label.get_rect(center=(screen.get_width() // 2 - 76, panel_rect.top + 214))
+        name_label_rect = name_label.get_rect(center=(screen.get_width() // 2 - 80, panel_rect.top + 236))
         screen.blit(name_label, name_label_rect)
 
-        btn_rect = pygame.Rect(name_label_rect.right + 18, name_label_rect.top - 1, 160, 48)
+        btn_rect = pygame.Rect(name_label_rect.right + 20, name_label_rect.top - 2, 170, 50)
         pygame.draw.rect(screen, (22, 121, 226), btn_rect, border_radius=12)
         pygame.draw.rect(screen, (120, 184, 255), btn_rect, width=2, border_radius=12)
         btn_text = self.font_small.render("Changer", True, (255, 255, 255))
         screen.blit(btn_text, btn_text.get_rect(center=btn_rect.center))
 
         mode_title = self.font_medium.render("MODE DE JEU", True, (148, 243, 170))
-        screen.blit(mode_title, mode_title.get_rect(center=(screen.get_width() // 2, panel_rect.top + 300)))
+        screen.blit(mode_title, mode_title.get_rect(center=(screen.get_width() // 2, panel_rect.top + 330)))
 
-        solo_rect = pygame.Rect((screen.get_width() // 2) - 208, panel_rect.top + 334, 180, 58)
-        duo_rect = pygame.Rect((screen.get_width() // 2) + 28, panel_rect.top + 334, 180, 58)
+        solo_rect = pygame.Rect((screen.get_width() // 2) - 210, panel_rect.top + 368, 180, 58)
+        duo_rect = pygame.Rect((screen.get_width() // 2) + 30, panel_rect.top + 368, 180, 58)
         solo_selected = self.selected_mode == "solo"
         duo_selected = self.selected_mode == "duo"
 
@@ -114,13 +145,13 @@ class Lobby:
         screen.blit(solo_text, solo_text.get_rect(center=solo_rect.center))
         screen.blit(duo_text, duo_text.get_rect(center=duo_rect.center))
 
-        mode_help = self.font_small.render("Solo: Espace / Haut / clic gauche   |   Duo: J1 Espace, J2 Haut ou clic gauche", True, (198, 205, 218))
-        screen.blit(mode_help, mode_help.get_rect(center=(screen.get_width() // 2, panel_rect.top + 412)))
+        mode_help = self.font_small.render("Solo: Espace / Haut / clic   |   Duo: J1 Espace, J2 Haut / clic", True, (198, 205, 218))
+        screen.blit(mode_help, mode_help.get_rect(center=(screen.get_width() // 2, panel_rect.top + 452)))
 
         hint_play = self.font_small.render("Appuyez sur ENTREE pour demarrer", True, (200, 200, 200))
         hint_exit = self.font_small.render("ECHAP pour quitter", True, (150, 150, 150))
-        screen.blit(hint_play, hint_play.get_rect(center=(screen.get_width() // 2, panel_rect.bottom - 52)))
-        screen.blit(hint_exit, hint_exit.get_rect(center=(screen.get_width() // 2, panel_rect.bottom - 20)))
+        screen.blit(hint_play, hint_play.get_rect(center=(screen.get_width() // 2, panel_rect.bottom - 48)))
+        screen.blit(hint_exit, hint_exit.get_rect(center=(screen.get_width() // 2, panel_rect.bottom - 18)))
 
         # Gestion des interactions souris/clavier.
         for event in events:
@@ -144,6 +175,7 @@ class Lobby:
 
     def _draw_name_input(self, screen, events):
         """Dessine l'ecran de saisie du pseudo et traite la validation."""
+        self._draw_menu_background(screen)
         # Overlay sombre pour focaliser la saisie.
         overlay = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 220))
