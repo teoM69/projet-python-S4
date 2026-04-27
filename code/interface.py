@@ -1,29 +1,44 @@
 import pygame
 
+
 class Interface:
+    """Couche d'interface utilisateur en surimpression.
+
+    Gere:
+    - score et best score,
+    - ecrans d'etat (pause, game over),
+    - mecanisme de cache pour eviter de rerender du texte inutilement.
+    """
     def __init__(self, screen):
         self.screen = screen
+
+        # Polices de l'UI (titre, texte principal, sous-texte).
         self.font_main = pygame.font.SysFont('Arial', 32)
         self.font_title = pygame.font.SysFont('Arial', 72, bold=True)
         self.font_small = pygame.font.SysFont('Arial', 24)
-        
+
+        # Palette UI.
         self.color_white = (255, 255, 255)
         self.color_gold = (255, 215, 0)
         self.color_red = (250, 50, 50)
         self.overlay_color = (0, 0, 0, 150)
 
+        # Cache des surfaces score/best pour limiter les allocations et render text.
         self._cached_score = None
         self._cached_best = None
         self._score_surf = None
         self._best_surf = None
         self._best_rect = None
 
+        # Overlay translucide reutilise pour les ecrans de pause/game over.
         self._overlay = pygame.Surface((self.screen.get_width(), self.screen.get_height()), pygame.SRCALPHA)
         self._overlay.fill(self.overlay_color)
 
+        # Cache de messages generiques (titre + hint + couleur) pour eviter rerender.
         self._message_cache = {}
 
     def show_score(self, score, best_score):
+        """Dessine le score courant et le meilleur score en haut de l'ecran."""
         # score en haut à gauche
         if score != self._cached_score:
             self._cached_score = score
@@ -40,9 +55,11 @@ class Interface:
             self.screen.blit(self._best_surf, self._best_rect)
 
     def draw_overlay(self):
+        """Dessine un voile sombre derriere les messages d'etat."""
         self.screen.blit(self._overlay, (0, 0))
 
     def show_message(self, title, hint, color):
+        """Affiche un panneau centre avec titre et sous-texte, avec cache memoise."""
         self.draw_overlay()
         key = (title, hint, color)
         cached = self._message_cache.get(key)
@@ -62,7 +79,9 @@ class Interface:
         self.screen.blit(hint_surf, hint_rect)
 
     def show_pause(self):
+        """Affiche l'ecran de pause."""
         self.show_message("PAUSE", "Appuyez sur P pour reprendre", self.color_white)
 
     def show_game_over(self):
+        """Affiche l'ecran de fin de partie."""
         self.show_message("GAME OVER", "Appuyez sur R pour rejouer", self.color_red)

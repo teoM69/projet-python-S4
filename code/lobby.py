@@ -1,102 +1,91 @@
 import pygame
 
+
 class Lobby:
+    """Menu d'accueil du jeu.
+
+    Responsabilites:
+    - afficher les options principales,
+    - gerer la saisie du nom joueur,
+    - lancer la partie en preparant les scores dans l'objet Game.
     """
-    Classe représentant le menu d'accueil (Lobby) du jeu.
-    Gère l'affichage du menu, la modification du nom du joueur et la transition vers le jeu.
-    """
-    def __init__(self, screen):
-        # État global du menu
-        self.inMenu = True             # True tant qu'on est dans le menu, False pour lancer le jeu
-        self.changingName = False      # True si le joueur est en train de taper son pseudo
-        self.name = "test"             # Nom par défaut du joueur
-        
-        # Initialisation de la police d'écriture (taille 74)
+
+    def __init__(self, screen, game):
+        # Etat global du menu.
+        self.inMenu = True
+        self.changingName = False
+        self.name = "test"
+
+        # Ressource d'affichage des textes.
         self.font = pygame.font.Font(None, 74)
-        
-        # Gestion des erreurs (ex: si le joueur tente de valider un nom vide)
+
+        # Affichage conditionnel d'un message d'erreur (nom vide).
         self.showError = False
 
+        # Reference au coeur de jeu pour synchroniser nom + scores.
+        self.game = game
+
     def run(self, screen, events):
-        """
-        Méthode appelée à chaque image (frame) pour mettre à jour et afficher le lobby.
-        :param screen: La surface de la fenêtre Pygame où dessiner.
-        :param events: La liste des événements Pygame (clavier, souris, etc.) de la frame actuelle.
-        """
-        
-        # --- ÉTAT 1 : MENU PRINCIPAL ---
-        # Le joueur n'est pas en train de modifier son nom
-        if self.changingName == False:
-            
-            # --- Création et positionnement des textes ---
-            # Affichage du nom actuel
+        """Met a jour et dessine le lobby pour la frame courante."""
+
+        # ETAT 1: menu principal.
+        if self.changingName is False:
+            # Texte du nom courant et zone cliquable pour edition.
             text_name = self.font.render("Nom: " + self.name, True, (255, 255, 255))
             text_name_rect = text_name.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2 - 100))
-            
-            # Zone interactive (bouton bleu) placée à côté du nom pour le modifier
             change_name_rect = pygame.Rect(text_name_rect.right + 10, text_name_rect.top, 200, 50)
 
-            # Instructions de jeu
+            # Raccourcis disponibles.
             text_play = self.font.render("Entree pour jouer", True, (255, 255, 255))
             text_quit = self.font.render("Echap pour quitter", True, (255, 255, 255))
-            
-            # --- Dessin sur l'écran ---
+
+            # Rendu des textes et du bouton bleu de changement de nom.
             screen.blit(text_play, (screen.get_width() // 2 - 200, screen.get_height() // 2))
             screen.blit(text_quit, (screen.get_width() // 2 - 200, screen.get_height() // 2 + 100))
             screen.blit(text_name, text_name_rect)
-            
-            # Dessin du bouton pour changer de nom (un simple rectangle bleu pour l'instant)
             pygame.draw.rect(screen, "blue", change_name_rect)
 
-            # --- Gestion des événements du menu principal ---
+            # Gestion des interactions du menu principal.
             for event in events:
-                # Clic de souris (clic gauche = button 1)
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    # Si on clique dans le rectangle bleu, on passe en mode "saisie de nom"
                     if change_name_rect.collidepoint(event.pos):
                         self.changingName = True
-                
-                # Touches du clavier
+
                 if event.type == pygame.KEYDOWN:
-                    # Touche 'Entrée' : on quitte le menu pour lancer le jeu
                     if event.key == pygame.K_RETURN:
+                        # Valide le nom et prepare les records avant de lancer la run.
+                        self.game.name = self.name
+                        self.game.setScores()
                         self.inMenu = False
-                    # Touche 'Échap' : on ferme complètement le jeu
                     if event.key == pygame.K_ESCAPE:
                         pygame.quit()
                         exit()
-                        
-        # --- ÉTAT 2 : SAISIE DU NOM ---
-        # Le joueur est en train de taper son nouveau nom
+
+        # ETAT 2: edition du nom.
         else:
-            # --- Dessin de l'interface de saisie ---
             title = self.font.render("Entrez votre nom", True, (255, 255, 255))
             screen.blit(title, (screen.get_width() // 2 - 200, screen.get_height() // 2 - 100))
-            
-            # Affiche le nom en cours de frappe avec un curseur "|" à la fin
-            name_input = self.font.render(self.name + "|", True, (0, 255, 255)) 
+
+            # Curseur textuel minimaliste avec suffixe "|".
+            name_input = self.font.render(self.name + "|", True, (0, 255, 255))
             screen.blit(name_input, (screen.get_width() // 2 - 200, screen.get_height() // 2))
-            
-            # Affichage du message d'erreur si l'utilisateur a essayé de valider un nom vide
+
             if self.showError:
-                error = self.font.render("Nom vide interdit", True, (230, 23, 16)) # Rouge
+                error = self.font.render("Nom vide interdit", True, (230, 23, 16))
                 screen.blit(error, (screen.get_width() // 2, screen.get_height() // 2 + 200))
-                
-            # --- Gestion des événements de la saisie de texte ---
+
+            # Gestion de la saisie texte.
             for event in events:
                 if event.type == pygame.KEYDOWN:
-                    # Touche 'Entrée' pour valider le nouveau nom
                     if event.key == pygame.K_RETURN:
-                        if self.name != "": # Le nom est valide
+                        if self.name != "":
                             self.showError = False
-                            self.changingName = False # Retour au menu principal
-                        else: # Le nom est vide, on déclenche l'erreur
+                            self.changingName = False
+                        else:
                             self.showError = True
-                            
-                    # Touche 'Retour arrière' (Backspace) pour effacer le dernier caractère
+
                     if event.key == pygame.K_BACKSPACE:
-                        self.name = self.name[:-1] # Retire la dernière lettre de la chaîne
-                        
-                # Événement de saisie de texte (gère automatiquement les majuscules, caractères spéciaux, etc.)
+                        self.name = self.name[:-1]
+
                 if event.type == pygame.TEXTINPUT:
-                    self.name += event.text # Ajoute le caractère tapé à la fin du nom
+                    self.name += event.text
