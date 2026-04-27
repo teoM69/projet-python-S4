@@ -69,10 +69,8 @@ class Interface:
         
         for i in range(box_height):
             alpha = int(180 - (i / box_height) * 60) # Fond dégradé simulé avec plusieurs rectangles
-            pygame.draw.line(box_surf, (10, 10, 30, alpha), (0, i), (box_width, i))
-            
-        pygame.draw.rect(box_surf, (255, 200, 0, 60), (0, 0, box_width, box_height), border_radius=12)# Bordure arrondie dorée
-        pygame.draw.rect(box_surf, (255, 200, 0, 120), (0, 0, box_width, box_height), width=2, border_radius=12)
+            pygame.draw.line(box_surf, (60, 10, 120, alpha), (0, i), (box_width, i))
+        pygame.draw.rect(box_surf, (255, 255, 255, 180), (0, 0, box_width, box_height), width=2, border_radius=12)
         self.screen.blit(box_surf, (box_x, box_y))
         sep_y = box_y + padding + label_best.get_height() + self._best_surf.get_height() + spacing# Ligne de séparation dorée au milieu
         pygame.draw.line(
