@@ -30,10 +30,11 @@ class Lobby:
         self.selected_mode = "solo"
 
         self.menu_bg = self._load_menu_background(screen)
+        self.menu_bg_scroll = 0.0
 
     def _load_menu_background(self, screen):
-        """Charge le fond du lobby fourni par l'utilisateur avec fallback robuste."""
-        bg_path = os.path.join("assets", "Images", "Menu-arriere-plan.png")
+        """Charge le meme fond que la partie (BackGround) avec fallback robuste."""
+        bg_path = os.path.join("assets", "Images", "BackGround.png")
         try:
             image = pygame.image.load(bg_path).convert()
             return pygame.transform.scale(image, (screen.get_width(), screen.get_height()))
@@ -43,11 +44,15 @@ class Lobby:
             return fallback
 
     def _draw_menu_background(self, screen):
-        """Dessine le fond puis un voile pour garantir la lisibilite du menu."""
+        """Dessine le fond en defilement horizontal + voiles de lisibilite."""
         if self.menu_bg.get_size() != (screen.get_width(), screen.get_height()):
             self.menu_bg = pygame.transform.scale(self.menu_bg, (screen.get_width(), screen.get_height()))
 
-        screen.blit(self.menu_bg, (0, 0))
+        # Parallaxe douce pour rappeler le defilement du jeu.
+        self.menu_bg_scroll = (self.menu_bg_scroll + 0.75) % max(1, screen.get_width())
+        offset = int(self.menu_bg_scroll)
+        screen.blit(self.menu_bg, (-offset, 0))
+        screen.blit(self.menu_bg, (screen.get_width() - offset, 0))
 
         shade = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
         shade.fill((6, 8, 18, 140))
