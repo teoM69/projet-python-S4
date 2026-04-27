@@ -93,7 +93,6 @@ lobby = Lobby(screen, game)
 interface = Interface(screen)
 visual_fx = VisualEffects()
 
-# Garde le joueur aligne sur la ligne de sol initiale avec la hauteur actuelle du sprite.
 player = Player("player", 100, screen.get_height() - 50 - 165 - 55)
 ob_gen = ObstacleGenerator(screen.get_width(), screen.get_height())
 last_spawn = pygame.time.get_ticks()
@@ -131,7 +130,6 @@ while running:
             death_time_ms = None
             switch_request_until = 0
             game_state = STATE_PLAYING
-
     else:
         now = pygame.time.get_ticks()
 
