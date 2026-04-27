@@ -98,10 +98,13 @@ def start_new_run(game, players, obstacle_generator, visual_effects, now_ms):
 
 
 pygame.init()
+WINDOWED_DEFAULT_SIZE = (1000, 700)
+windowed_size = WINDOWED_DEFAULT_SIZE
+is_fullscreen = False
 try:
-    screen = pygame.display.set_mode((1000, 700), vsync=1)
+    screen = pygame.display.set_mode(WINDOWED_DEFAULT_SIZE, pygame.RESIZABLE, vsync=1)
 except TypeError:
-    screen = pygame.display.set_mode((1000, 700))
+    screen = pygame.display.set_mode(WINDOWED_DEFAULT_SIZE, pygame.RESIZABLE)
 clock = pygame.time.Clock()
 
 game = Game(screen)
@@ -121,6 +124,43 @@ death_time_ms = None
 game_state = STATE_MENU
 switch_request_until = [0 for _ in players]
 
+
+def apply_screen_resize(new_screen):
+    """Synchronise les composants dependants de la taille d'ecran."""
+    global screen
+    screen = new_screen
+    game.set_screen(screen)
+    interface.set_screen(screen)
+    ob_gen.set_screen_size(screen.get_width(), screen.get_height())
+
+    # Recale les joueurs dans la nouvelle fenetre sans casser la run.
+    for player in players:
+        max_x = max(0, screen.get_width() - player.width)
+        max_y = max(0, screen.get_height() - player.height)
+        player.playerPosition.x = max(0, min(player.playerPosition.x, max_x))
+        player.playerPosition.y = max(0, min(player.playerPosition.y, max_y))
+        player.update_rect()
+
+
+def toggle_fullscreen():
+    """Bascule entre mode fenetre redimensionnable et plein ecran."""
+    global is_fullscreen, windowed_size
+    if is_fullscreen:
+        try:
+            new_screen = pygame.display.set_mode(windowed_size, pygame.RESIZABLE, vsync=1)
+        except TypeError:
+            new_screen = pygame.display.set_mode(windowed_size, pygame.RESIZABLE)
+        is_fullscreen = False
+    else:
+        windowed_size = (screen.get_width(), screen.get_height())
+        try:
+            new_screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN, vsync=1)
+        except TypeError:
+            new_screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+        is_fullscreen = True
+
+    apply_screen_resize(new_screen)
+
 running = True
 
 while running:
@@ -132,6 +172,15 @@ while running:
     for event in events:
         if event.type == pygame.QUIT:
             running = False
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_F11:
+            toggle_fullscreen()
+        elif event.type == pygame.VIDEORESIZE and not is_fullscreen:
+            windowed_size = (max(640, event.w), max(360, event.h))
+            try:
+                resized = pygame.display.set_mode(windowed_size, pygame.RESIZABLE, vsync=1)
+            except TypeError:
+                resized = pygame.display.set_mode(windowed_size, pygame.RESIZABLE)
+            apply_screen_resize(resized)
 
     screen.fill((0, 0, 0))
 
