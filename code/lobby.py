@@ -12,6 +12,7 @@ class Lobby:
     """
 
     def __init__(self, screen, game):
+        # Etat de navigation du lobby.
         self.inMenu = True
         self.changingName = False
         self.name = "Joueur 1"
@@ -22,7 +23,9 @@ class Lobby:
         self.font_small = pygame.font.Font(None, 36)
 
         self.game = game
+    # Active l'affichage d'un message d'erreur si le pseudo est invalide.
         self.showError = False
+    # Placeholder pour des variantes de jeu futures.
         self.selected_mode = "arcade"
 
     def run(self, screen, events):
@@ -33,6 +36,15 @@ class Lobby:
             self._draw_name_input(screen, events)
 
     def _draw_main_menu(self, screen, events):
+        """Dessine le menu principal et traite les interactions de base.
+
+        Elements principaux:
+        - panneau central translucide,
+        - titre du jeu,
+        - section pseudo + bouton de modification,
+        - consignes clavier.
+        """
+        # Panneau principal centré.
         panel_width, panel_height = 700, 500
         panel_rect = pygame.Rect(
             (screen.get_width() - panel_width) // 2,
@@ -41,6 +53,7 @@ class Lobby:
             panel_height,
         )
 
+        # Surface alpha: fond + contour pour un rendu plus lisible.
         panel_surface = pygame.Surface((panel_width, panel_height), pygame.SRCALPHA)
         pygame.draw.rect(panel_surface, (12, 16, 30, 200), panel_surface.get_rect(), border_radius=20)
         pygame.draw.rect(panel_surface, (94, 138, 208, 255), panel_surface.get_rect(), width=3, border_radius=20)
@@ -67,6 +80,7 @@ class Lobby:
         screen.blit(hint_play, hint_play.get_rect(center=(screen.get_width() // 2, panel_rect.bottom - 80)))
         screen.blit(hint_exit, hint_exit.get_rect(center=(screen.get_width() // 2, panel_rect.bottom - 40)))
 
+        # Gestion des interactions souris/clavier.
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if btn_rect.collidepoint(event.pos):
@@ -84,6 +98,8 @@ class Lobby:
                     sys.exit()
 
     def _draw_name_input(self, screen, events):
+        """Dessine l'ecran de saisie du pseudo et traite la validation."""
+        # Overlay sombre pour focaliser la saisie.
         overlay = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 220))
         screen.blit(overlay, (0, 0))
@@ -98,6 +114,7 @@ class Lobby:
             err = self.font_small.render("Le nom ne peut pas etre vide !", True, (255, 50, 50))
             screen.blit(err, err.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2 + 100)))
 
+        # Validation clavier et saisie texte character-by-character.
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:

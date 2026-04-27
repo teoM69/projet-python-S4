@@ -93,7 +93,9 @@ lobby = Lobby(screen, game)
 interface = Interface(screen)
 visual_fx = VisualEffects()
 
+# Garde le joueur aligne sur la ligne de sol initiale avec sa hitbox actuelle.
 player = Player("player", 100, screen.get_height() - 50 - 165 - 55)
+# Systeme de generation et de gestion des obstacles en flux continu.
 ob_gen = ObstacleGenerator(screen.get_width(), screen.get_height())
 last_spawn = pygame.time.get_ticks()
 spawn_interval = random.randint(OBSTACLE_SPAWN_MIN_MS, OBSTACLE_SPAWN_MAX_MS)
