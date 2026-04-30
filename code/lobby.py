@@ -55,7 +55,7 @@ class Lobby:
         self._draw_menu_background(screen)
         mx, my = pygame.mouse.get_pos()
 
-        panel_w, panel_h = 700, 480
+        panel_w, panel_h = 800, 480
         panel_rect = pygame.Rect((screen.get_width() - panel_w) // 2, (screen.get_height() - panel_h) // 2, panel_w, panel_h)
 
         pygame.draw.rect(screen, (8, 12, 24, 240), panel_rect, border_radius=20)
@@ -88,13 +88,13 @@ class Lobby:
         mode_title = self.font_small.render("SELECTION DU MODE", True, (180, 190, 210))
         screen.blit(mode_title, (panel_rect.left + 50, panel_rect.top + 260))
 
-        campagne_rect = pygame.Rect(panel_rect.left + 50, panel_rect.top + 290, 180, 60)
-        solo_rect = pygame.Rect(panel_rect.left + 250, panel_rect.top + 290, 180, 60)
-        duo_rect = pygame.Rect(panel_rect.left + 450, panel_rect.top + 290, 180, 60)
+        campagne_rect = pygame.Rect(panel_rect.left + 50, panel_rect.top + 290, 220, 60)
+        solo_rect = pygame.Rect(panel_rect.left + 290, panel_rect.top + 290, 220, 60)
+        duo_rect = pygame.Rect(panel_rect.left + 530, panel_rect.top + 290, 220, 60)
 
         modes_info = (
             (campagne_rect, "campaign", "CAMPAGNE"),
-            (solo_rect, "solo", "SOLO"),
+            (solo_rect, "solo", "SURVIE"),
             (duo_rect, "duo", "DUO")
         )
 
