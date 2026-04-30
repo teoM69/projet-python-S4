@@ -258,7 +258,15 @@ while running:
             elapsed_s = (now - run_start_time) / 1000.0
             ramp_ratio = min(1.0, elapsed_s / max(0.001, GAME_SPEED_RAMP_DURATION_SEC))
             speed_curve = ramp_ratio ** GAME_SPEED_RAMP_EXPONENT
-            game.gameSpeed = GAME_SPEED_START + ((GAME_SPEED_MAX - GAME_SPEED_START) * speed_curve)
+
+            if lobby.selected_mode == "campaign":
+                sp_start = campaign.current_level.speed_start
+                sp_max = campaign.current_level.speed_max
+            else:
+                sp_start = GAME_SPEED_START
+                sp_max = GAME_SPEED_MAX
+
+            sp_start + ((sp_max - sp_start) * speed_curve)
 
             gravity_ratio = min(1.0, elapsed_s / max(0.001, PLAYER_GRAVITY_RAMP_DURATION_SEC))
             gravity_curve = gravity_ratio ** PLAYER_GRAVITY_RAMP_EXPONENT
