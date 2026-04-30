@@ -338,6 +338,14 @@ while running:
                     death_time_ms = now
                 game_state = STATE_GAME_OVER
 
+            elif lobby.selected_mode == "campaign":
+                if game.score >= campaign.current_level.target_score:
+                    campaign.add_level_score(game.score)
+                    last_level_score = game.score
+                    paused = False
+                    ob_gen.obstacles.clear()
+                    game_state = STATE_LEVEL_WON
+
         ob_gen.draw(screen)
         visual_fx.update_and_draw(screen)
         for player in players:
