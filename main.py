@@ -14,6 +14,7 @@ from code.lobby import Lobby
 from code.Player import Player
 from code.ObstacleGenerator import ObstacleGenerator
 from code.VisualEffects import VisualEffects
+from code.campaign import CampaignMode
 from code.constants import (
     OBSTACLE_SPAWN_MIN_MS,
     OBSTACLE_SPAWN_MAX_MS,
@@ -46,6 +47,11 @@ from code.constants import (
 )
 from code.interface import Interface
 
+from code.campaign import CampaignMode
+
+# Ajout des nouveaux états pour la campagne
+STATE_LEVEL_WON = 3
+STATE_CAMPAIGN_COMPLETE = 4
 
 def can_switch_on_surface(player, floor_y, ceiling_y, tolerance=SWITCH_SURFACE_TOLERANCE):
     """Retourne True si le joueur est considere en contact avec une surface.
@@ -112,6 +118,7 @@ game = Game(screen)
 lobby = Lobby(screen, game)
 interface = Interface(screen)
 visual_fx = VisualEffects()
+campaign = CampaignMode()
 
 # Joueurs actifs: un seul en solo, deux en duo.
 players = build_players(lobby.selected_mode, screen.get_height())
@@ -208,6 +215,18 @@ while running:
                         paused = False
                         game_state = STATE_PLAYING
                     elif event.key in (pygame.K_ESCAPE, pygame.K_m):
+                        lobby.inMenu = True
+                        game_state = STATE_MENU
+                elif game_state == STATE_LEVEL_WON:
+                    if event.key == pygame.K_RETURN:
+                        if campaign.advance_level():
+                            run_start_time, last_spawn, spawn_interval = start_new_run(game, players, ob_gen, visual_fx, now)
+                            game_state = STATE_PLAYING
+                        else:
+                            game_state = STATE_CAMPAIGN_COMPLETE
+            
+                elif game_state == STATE_CAMPAIGN_COMPLETE:
+                    if event.key in (pygame.K_RETURN, pygame.K_ESCAPE, pygame.K_m):
                         lobby.inMenu = True
                         game_state = STATE_MENU
                 else:
