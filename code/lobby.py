@@ -2,22 +2,10 @@ import os
 import pygame
 import sys
 
-
 class Lobby:
-    """Menu d'accueil du jeu Gravity Runner.
-
-    Cette classe gere 2 sous-ecrans:
-    - le menu principal (choix mode + lancement),
-    - l'ecran de saisie du pseudo.
-
-    Le flux est simple:
-    1) Tant que ``inMenu`` est True, ``main.py`` appelle ``run`` a chaque frame.
-    2) ``run`` redirige vers ``_draw_main_menu`` ou ``_draw_name_input`` selon l'etat.
-    3) Quand le joueur valide ENTER dans le menu principal, ``inMenu`` passe a False.
-    """
+    """Menu d'accueil du jeu Gravity Runner."""
 
     def __init__(self, screen, game):
-        # Etat global du lobby.
         self.inMenu = True
         self.changingName = False
         self.name = "Joueur 1"
@@ -25,25 +13,16 @@ class Lobby:
         self.showError = False
         self.selected_mode = "solo"
 
-        # Polices
         self.font_title = pygame.font.Font(None, 85)
         self.font_medium = pygame.font.Font(None, 50)
         self.font_small = pygame.font.Font(None, 32)
         self.font_tiny = pygame.font.Font(None, 24)
 
-        # Ressources de fond + parametre de defilement horizontal.
         self.menu_bg = self._load_menu_background(screen)
         self.menu_bg_scroll = 0.0
-
-        # Animation du curseur sur l'ecran de saisie du pseudo.
         self.cursor_timer = 0
 
     def _load_menu_background(self, screen):
-        """Charge le fond principal (meme que le jeu) avec fallback robuste.
-
-        Si l'image n'est pas disponible, on renvoie une surface unie pour
-        eviter tout crash et garder le menu fonctionnel.
-        """
         bg_path = os.path.join("assets", "Images", "BackGround.png")
         try:
             image = pygame.image.load(bg_path).convert()
@@ -54,43 +33,31 @@ class Lobby:
             return fallback
 
     def _draw_menu_background(self, screen):
-        """Dessine le fond en defilement horizontal + voile de lisibilite.
-
-        Le fond est redimensionne dynamiquement si la fenetre change de taille.
-        Le defilement leger donne une impression de scene vivante meme au menu.
-        """
-        # Si la fenetre est redimensionnee, on adapte le fond au nouveau format.
         if self.menu_bg.get_size() != (screen.get_width(), screen.get_height()):
             self.menu_bg = pygame.transform.scale(self.menu_bg, (screen.get_width(), screen.get_height()))
 
-        # Defilement horizontal en boucle (parallaxe tres douce).
         self.menu_bg_scroll = (self.menu_bg_scroll + 0.5) % max(1, screen.get_width())
         offset = int(self.menu_bg_scroll)
         screen.blit(self.menu_bg, (-offset, 0))
         screen.blit(self.menu_bg, (screen.get_width() - offset, 0))
 
-        # Voile global sombre pour garantir la lisibilite du texte par-dessus.
         shade = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
         shade.fill((6, 8, 18, 160))
         screen.blit(shade, (0, 0))
 
     def run(self, screen, events):
-        """Point d'entree du lobby appele chaque frame."""
         if not self.changingName:
             self._draw_main_menu(screen, events)
         else:
             self._draw_name_input(screen, events)
 
     def _draw_main_menu(self, screen, events):
-        """Dessine le menu principal et traite les interactions associees."""
         self._draw_menu_background(screen)
         mx, my = pygame.mouse.get_pos()
 
-        # Panneau central: zone principale qui regroupe toutes les infos du menu.
-        panel_w, panel_h = 700, 480
+        panel_w, panel_h = 800, 480
         panel_rect = pygame.Rect((screen.get_width() - panel_w) // 2, (screen.get_height() - panel_h) // 2, panel_w, panel_h)
 
-        # Dessin du panel (fond + bordure)
         pygame.draw.rect(screen, (8, 12, 24, 240), panel_rect, border_radius=20)
         pygame.draw.rect(screen, (96, 144, 230), panel_rect, width=2, border_radius=20)
 
@@ -110,7 +77,6 @@ class Lobby:
         name_pos = (panel_rect.left + 50, panel_rect.top + 185)
         screen.blit(name_label, name_pos)
 
-        # Bouton "Modifier" pour basculer vers l'ecran de saisie pseudo.
         btn_edit_rect = pygame.Rect(panel_rect.right - 180, panel_rect.top + 180, 130, 40)
         is_hover_edit = btn_edit_rect.collidepoint(mx, my)
         color_btn = (42, 126, 234) if is_hover_edit else (22, 101, 206)
@@ -122,11 +88,17 @@ class Lobby:
         mode_title = self.font_small.render("SELECTION DU MODE", True, (180, 190, 210))
         screen.blit(mode_title, (panel_rect.left + 50, panel_rect.top + 260))
 
-        solo_rect = pygame.Rect(panel_rect.left + 50, panel_rect.top + 290, 290, 60)
-        duo_rect = pygame.Rect(panel_rect.right - 340, panel_rect.top + 290, 290, 60)
+        campagne_rect = pygame.Rect(panel_rect.left + 50, panel_rect.top + 290, 220, 60)
+        solo_rect = pygame.Rect(panel_rect.left + 290, panel_rect.top + 290, 220, 60)
+        duo_rect = pygame.Rect(panel_rect.left + 530, panel_rect.top + 290, 220, 60)
 
-        # Dessine les 2 cartes de mode avec style normal/hover/selected.
-        for rect, mode, label in ((solo_rect, "solo", "SOLO"), (duo_rect, "duo", "DUO")):
+        modes_info = (
+            (campagne_rect, "campaign", "CAMPAGNE"),
+            (solo_rect, "solo", "SURVIE"),
+            (duo_rect, "duo", "DUO")
+        )
+
+        for rect, mode, label in modes_info:
             selected = self.selected_mode == mode
             hover = rect.collidepoint(mx, my)
             bg_color = (60, 140, 255) if selected else (30, 40, 60)
@@ -152,15 +124,13 @@ class Lobby:
         hint_mode = self.font_tiny.render("Fleches Gauche/Droite: changer le mode", True, (130, 145, 170))
         screen.blit(hint_mode, hint_mode.get_rect(center=(screen.get_width() // 2, panel_rect.bottom - 5)))
 
-        # Gestion des interactions souris/clavier.
-        # - Clic: change pseudo ou selectionne un mode.
-        # - ENTER: valide et demarre la partie.
-        # - LEFT/RIGHT: bascule entre solo et duo.
-        # - ESC: quitte completement le jeu.
+        modes_list = ["campaign", "solo", "duo"]
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if btn_edit_rect.collidepoint(event.pos):
                     self.changingName = True
+                elif campagne_rect.collidepoint(event.pos):
+                    self.selected_mode = "campaign"
                 elif solo_rect.collidepoint(event.pos):
                     self.selected_mode = "solo"
                 elif duo_rect.collidepoint(event.pos):
@@ -172,28 +142,23 @@ class Lobby:
                         self.game.name = self.name
                         self.game.setScores()
                         self.inMenu = False
-                elif event.key in (pygame.K_LEFT, pygame.K_RIGHT):
-                    self.selected_mode = "duo" if self.selected_mode == "solo" else "solo"
+                elif event.key == pygame.K_RIGHT:
+                    idx = (modes_list.index(self.selected_mode) + 1) % len(modes_list)
+                    self.selected_mode = modes_list[idx]
+                elif event.key == pygame.K_LEFT:
+                    idx = (modes_list.index(self.selected_mode) - 1) % len(modes_list)
+                    self.selected_mode = modes_list[idx]
                 elif event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     sys.exit()
 
     def _draw_name_input(self, screen, events):
-        """Dessine l'ecran de saisie du pseudo et traite la validation.
-
-        Regles:
-        - ENTER valide si le nom n'est pas vide,
-        - BACKSPACE supprime un caractere,
-        - TEXTINPUT ajoute des caracteres (max 12).
-        """
         self._draw_menu_background(screen)
 
-        # Overlay sombre pour isoler visuellement le formulaire de saisie.
         overlay = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 200))
         screen.blit(overlay, (0, 0))
 
-        # Curseur clignotant: 30 frames visible, 30 frames cache.
         self.cursor_timer = (self.cursor_timer + 1) % 60
         cursor = "|" if self.cursor_timer < 30 else ""
 
@@ -210,7 +175,6 @@ class Lobby:
             err = self.font_small.render("Le nom ne peut pas etre vide !", True, (255, 50, 50))
             screen.blit(err, err.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2 + 100)))
 
-        # Traitement des entrees pour edition du pseudo.
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
@@ -224,4 +188,3 @@ class Lobby:
             elif event.type == pygame.TEXTINPUT:
                 if len(self.name) < 12:
                     self.name += event.text
-
