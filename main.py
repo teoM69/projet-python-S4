@@ -368,6 +368,36 @@ while running:
                 lobby.inMenu = True
                 game_state = STATE_MENU
 
+        elif game_state == STATE_LEVEL_WON:
+            overlay = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
+            overlay.fill((0, 22, 12, 185))
+            screen.blit(overlay, (0, 0))
+            f_title = pygame.font.Font(None, 88)
+            f_med = pygame.font.Font(None, 50)
+            f_small = pygame.font.Font(None, 30)
+            
+            c_label = f_title.render("NIVEAU TERMINE", True, (170, 255, 196))
+            c_score = f_med.render(f"Score niveau: {last_level_score}", True, (255, 255, 255))
+            c_hint = f_small.render("Entree: niveau suivant", True, (240, 240, 240))
+            screen.blit(c_label, c_label.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2 - 60)))
+            screen.blit(c_score, c_score.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2 + 8)))
+            screen.blit(c_hint, c_hint.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2 + 56)))
+
+        elif game_state == STATE_CAMPAIGN_COMPLETE:
+            overlay = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
+            overlay.fill((6, 12, 34, 200))
+            screen.blit(overlay, (0, 0))
+            f_title = pygame.font.Font(None, 88)
+            f_med = pygame.font.Font(None, 50)
+            f_small = pygame.font.Font(None, 30)
+            
+            cmp_label = f_title.render("CAMPAGNE FINIE", True, (140, 215, 255))
+            cmp_total = f_med.render(f"Total campagne: {campaign.total_score}", True, (255, 255, 255))
+            cmp_hint = f_small.render("Entree ou M: menu", True, (240, 240, 240))
+            screen.blit(cmp_label, cmp_label.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2 - 60)))
+            screen.blit(cmp_total, cmp_total.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2 + 8)))
+            screen.blit(cmp_hint, cmp_hint.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2 + 56)))
+
     pygame.display.flip()
 
 pygame.quit()

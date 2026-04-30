@@ -15,7 +15,7 @@ class CampaignMode:
     def __init__(self):
         self.levels = [
             Level(1, "Éveil", 5.0, 7.0, 0.005, 1.2, 0.0, 100),
-            Level(2, "Intermediaire", 6.0, 9.0, 0.006, 1.0, 0.1, 800),
+            Level(2, "Intermediaire", 6.0, 9.0, 0.006, 1.0, 0.1, 500),
             Level(3, "Expert", 8.0, 12.0, 0.008, 0.8, 0.2, 1000)
         ]
         self.current_level_idx = 0
