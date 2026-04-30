@@ -26,6 +26,11 @@ class ObstacleGenerator:
         self.obstacles = []
         self.spawn_interval = 1500
 
+    def set_screen_size(self, screen_width, screen_height):
+        """Met a jour les dimensions de reference de l'ecran."""
+        self.screen_width = int(screen_width)
+        self.screen_height = int(screen_height)
+
     def list_obstacles(self):
         """Expose la liste courante des obstacles."""
         return self.obstacles

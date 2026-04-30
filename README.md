@@ -78,10 +78,12 @@ python3 main.py
 - `Entrée`: lancer la partie
 - `Échap`: quitter
 - Clic sur le bouton bleu: modifier le nom
+- Clic sur la carte `SOLO` ou `DUO`: choisir le mode
 
 ### En jeu
 
-- `Espace`, `Flèche Haut` ou clic gauche: inverser la gravité (si le joueur touche une surface)
+- Mode solo: `Espace`, `Flèche Haut` ou clic gauche pour inverser la gravité (si le joueur touche une surface)
+- Mode duo: Joueur 1 = `Espace` uniquement, Joueur 2 = `Flèche Haut` ou clic gauche
 - `P`: pause / reprise
 - `Échap`: retour au menu
 

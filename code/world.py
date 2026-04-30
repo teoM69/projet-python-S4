@@ -52,6 +52,12 @@ class World:
         self.parallax_x = 0.0
         self.has_bg_image = False
 
+        self._rebuild_visual_assets()
+
+        self.reset_structures()
+
+    def _rebuild_visual_assets(self):
+        """Recharge/reconstruit les surfaces visuelles selon la taille courante."""
         bg_path = os.path.join("assets", "Images", "BackGround.png")
         try:
             self.bg_image = pygame.image.load(bg_path).convert()
@@ -60,6 +66,7 @@ class World:
         except Exception:
             self.bg_image = pygame.Surface((self.screen_width, self.screen_height))
             self.bg_image.fill((35, 35, 35))
+            self.has_bg_image = False
 
         self._gradient_overlay = self._build_gradient_overlay()
         self._scanline_overlay = self._build_scanline_overlay()
@@ -68,6 +75,13 @@ class World:
         self._particles = self._build_particles(80)
         self._light_columns = self._build_light_columns(7)
 
+    def set_screen_size(self, screen_width, screen_height):
+        """Met a jour la geometrie du monde apres resize/plein ecran."""
+        self.screen_width = int(screen_width)
+        self.screen_height = int(screen_height)
+        self.roof_y = int(self.screen_height * 0.25)
+        self.floor_y = self.screen_height - 50 - 165
+        self._rebuild_visual_assets()
         self.reset_structures()
 
     def _build_gradient_overlay(self):

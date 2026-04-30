@@ -82,3 +82,8 @@ class Game:
        self.bestScore = self.getBestScore(data)
        self.personalBest = self.getPersonalbest(data)
        print(self.personalBest)
+
+    def set_screen(self, screen):
+        """Met a jour la surface principale et reajuste le monde."""
+        self.screen = screen
+        self.world.set_screen_size(screen.get_width(), screen.get_height())

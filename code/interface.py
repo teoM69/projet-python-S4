@@ -37,7 +37,15 @@ class Interface:
         # Cache de messages generiques (titre + hint + couleur) pour eviter rerender.
         self._message_cache = {}
 
- ##"""Dessine le score courant et le meilleur score en haut a droite dans un rectangle."""
+    def set_screen(self, screen):
+        """Met a jour la surface cible apres resize/plein ecran."""
+        self.screen = screen
+        self._overlay = pygame.Surface((self.screen.get_width(), self.screen.get_height()), pygame.SRCALPHA)
+        self._overlay.fill(self.overlay_color)
+        # Invalide les positions dependantes de la taille d'ecran.
+        self._best_rect = None
+        self._message_cache = {}
+
     def show_score(self, score, best_score):
         if score != self._cached_score:
             self._cached_score = score

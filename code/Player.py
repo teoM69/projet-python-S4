@@ -58,6 +58,7 @@ class Player:
         self.walk_normal = [safe_load('mov1_1.img.png'), safe_load('mov2_1.img.png'), safe_load('mov1_1.img.png')]
         self.walk_inverted = [safe_load('mov1_-1.img.png'), safe_load('mov2_-1.img.png'), safe_load('mov1_-1.img.png')]
         self.flip_imgs = [safe_load('flip1.img.png'), safe_load('flip2.img.png')]
+        self.dead_image = safe_load('dead.img.png')
 
         self.current_image = self.walk_normal[0]
         self.anim_index = 0
@@ -116,7 +117,7 @@ class Player:
         """Met a jour animation + physique verticale avec contraintes support."""
         # Temporisation de l'animation.
         self.anim_timer += time_scale
-        if self.anim_timer > 10:
+        if self.anim_timer > 6:
             self.anim_index += 1
             self.anim_timer = 0
 
@@ -162,6 +163,10 @@ class Player:
 
     def draw(self, screen):
         """Dessine le joueur avec trail et aura de gravite."""
+        if not self.alive:
+            screen.blit(self.dead_image, self.rect.topleft)
+            return
+
         trail_len = len(self.trail_points)
         if trail_len > 1:
             for idx, point in enumerate(self.trail_points[:-1]):

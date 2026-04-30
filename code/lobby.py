@@ -1,90 +1,140 @@
+import os
 import pygame
 import sys
 
-
 class Lobby:
-    """Menu d'accueil du jeu.
-
-    Responsabilites:
-    - afficher les options principales,
-    - gerer la saisie du nom joueur,
-    - lancer la partie en preparant les scores dans l'objet Game.
-    """
+    """Menu d'accueil du jeu Gravity Runner."""
 
     def __init__(self, screen, game):
-        # Etat de navigation du lobby.
         self.inMenu = True
         self.changingName = False
         self.name = "Joueur 1"
-
-        # Polices.
-        self.font_title = pygame.font.Font(None, 80)
-        self.font_medium = pygame.font.Font(None, 50)
-        self.font_small = pygame.font.Font(None, 36)
-
         self.game = game
-    # Active l'affichage d'un message d'erreur si le pseudo est invalide.
         self.showError = False
-    # Placeholder pour des variantes de jeu futures.
-        self.selected_mode = "arcade"
+        self.selected_mode = "solo"
+
+        self.font_title = pygame.font.Font(None, 85)
+        self.font_medium = pygame.font.Font(None, 50)
+        self.font_small = pygame.font.Font(None, 32)
+        self.font_tiny = pygame.font.Font(None, 24)
+
+        self.menu_bg = self._load_menu_background(screen)
+        self.menu_bg_scroll = 0.0
+        self.cursor_timer = 0
+
+    def _load_menu_background(self, screen):
+        bg_path = os.path.join("assets", "Images", "BackGround.png")
+        try:
+            image = pygame.image.load(bg_path).convert()
+            return pygame.transform.scale(image, (screen.get_width(), screen.get_height()))
+        except Exception:
+            fallback = pygame.Surface((screen.get_width(), screen.get_height()))
+            fallback.fill((12, 10, 28))
+            return fallback
+
+    def _draw_menu_background(self, screen):
+        if self.menu_bg.get_size() != (screen.get_width(), screen.get_height()):
+            self.menu_bg = pygame.transform.scale(self.menu_bg, (screen.get_width(), screen.get_height()))
+
+        self.menu_bg_scroll = (self.menu_bg_scroll + 0.5) % max(1, screen.get_width())
+        offset = int(self.menu_bg_scroll)
+        screen.blit(self.menu_bg, (-offset, 0))
+        screen.blit(self.menu_bg, (screen.get_width() - offset, 0))
+
+        shade = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
+        shade.fill((6, 8, 18, 160))
+        screen.blit(shade, (0, 0))
 
     def run(self, screen, events):
-        """Met a jour et dessine le lobby pour la frame courante."""
         if not self.changingName:
             self._draw_main_menu(screen, events)
         else:
             self._draw_name_input(screen, events)
 
     def _draw_main_menu(self, screen, events):
-        """Dessine le menu principal et traite les interactions de base.
+        self._draw_menu_background(screen)
+        mx, my = pygame.mouse.get_pos()
 
-        Elements principaux:
-        - panneau central translucide,
-        - titre du jeu,
-        - section pseudo + bouton de modification,
-        - consignes clavier.
-        """
-        # Panneau principal centré.
-        panel_width, panel_height = 700, 500
-        panel_rect = pygame.Rect(
-            (screen.get_width() - panel_width) // 2,
-            (screen.get_height() - panel_height) // 2,
-            panel_width,
-            panel_height,
-        )
+        panel_w, panel_h = 800, 480
+        panel_rect = pygame.Rect((screen.get_width() - panel_w) // 2, (screen.get_height() - panel_h) // 2, panel_w, panel_h)
 
-        # Surface alpha: fond + contour pour un rendu plus lisible.
-        panel_surface = pygame.Surface((panel_width, panel_height), pygame.SRCALPHA)
-        pygame.draw.rect(panel_surface, (12, 16, 30, 200), panel_surface.get_rect(), border_radius=20)
-        pygame.draw.rect(panel_surface, (94, 138, 208, 255), panel_surface.get_rect(), width=3, border_radius=20)
-        screen.blit(panel_surface, panel_rect.topleft)
+        pygame.draw.rect(screen, (8, 12, 24, 240), panel_rect, border_radius=20)
+        pygame.draw.rect(screen, (96, 144, 230), panel_rect, width=2, border_radius=20)
 
-        title_surf = self.font_title.render("GRAVITY RUNNER", True, (255, 255, 255))
+        # --- TITRE ---
+        title_surf = self.font_title.render("GRAVITY RUNNER", True, (248, 250, 255))
         title_rect = title_surf.get_rect(center=(screen.get_width() // 2, panel_rect.top + 60))
         screen.blit(title_surf, title_rect)
 
-        name_label = self.font_medium.render(f"Nom: {self.name}", True, (255, 255, 255))
-        name_label_rect = name_label.get_rect(center=(screen.get_width() // 2 - 60, panel_rect.top + 180))
-        screen.blit(name_label, name_label_rect)
+        subtitle = self.font_small.render("Pret pour le defi ?", True, (148, 243, 170))
+        screen.blit(subtitle, subtitle.get_rect(center=(screen.get_width() // 2, panel_rect.top + 110)))
 
-        btn_rect = pygame.Rect(name_label_rect.right + 20, name_label_rect.top - 5, 140, 50)
-        pygame.draw.rect(screen, (0, 102, 204), btn_rect, border_radius=10)
-        btn_text = self.font_small.render("Changer", True, (255, 255, 255))
-        screen.blit(btn_text, btn_text.get_rect(center=btn_rect.center))
+        # --- SECTION JOUEUR ---
+        name_tag = self.font_tiny.render("PROFIL JOUEUR", True, (155, 172, 196))
+        screen.blit(name_tag, (panel_rect.left + 50, panel_rect.top + 160))
 
-        mode_text = self.font_medium.render("MODE : SURVIE", True, (148, 243, 170))
-        screen.blit(mode_text, mode_text.get_rect(center=(screen.get_width() // 2, panel_rect.top + 300)))
+        name_label = self.font_medium.render(f"{self.name}", True, (255, 255, 255))
+        name_pos = (panel_rect.left + 50, panel_rect.top + 185)
+        screen.blit(name_label, name_pos)
+
+        btn_edit_rect = pygame.Rect(panel_rect.right - 180, panel_rect.top + 180, 130, 40)
+        is_hover_edit = btn_edit_rect.collidepoint(mx, my)
+        color_btn = (42, 126, 234) if is_hover_edit else (22, 101, 206)
+        pygame.draw.rect(screen, color_btn, btn_edit_rect, border_radius=8)
+        edit_txt = self.font_tiny.render("MODIFIER", True, (255, 255, 255))
+        screen.blit(edit_txt, edit_txt.get_rect(center=btn_edit_rect.center))
+
+        # --- SECTION MODE DE JEU ---
+        mode_title = self.font_small.render("SELECTION DU MODE", True, (180, 190, 210))
+        screen.blit(mode_title, (panel_rect.left + 50, panel_rect.top + 260))
+
+        campagne_rect = pygame.Rect(panel_rect.left + 50, panel_rect.top + 290, 220, 60)
+        solo_rect = pygame.Rect(panel_rect.left + 290, panel_rect.top + 290, 220, 60)
+        duo_rect = pygame.Rect(panel_rect.left + 530, panel_rect.top + 290, 220, 60)
+
+        modes_info = (
+            (campagne_rect, "campaign", "CAMPAGNE"),
+            (solo_rect, "solo", "SURVIE"),
+            (duo_rect, "duo", "DUO")
+        )
+
+        for rect, mode, label in modes_info:
+            selected = self.selected_mode == mode
+            hover = rect.collidepoint(mx, my)
+            bg_color = (60, 140, 255) if selected else (30, 40, 60)
+            if hover and not selected:
+                bg_color = (45, 55, 80)
+
+            pygame.draw.rect(screen, bg_color, rect, border_radius=12)
+            pygame.draw.rect(screen, (100, 200, 255) if selected else (70, 80, 100), rect, width=2, border_radius=12)
+            txt_surf = self.font_medium.render(label, True, (255, 255, 255))
+            screen.blit(txt_surf, txt_surf.get_rect(center=rect.center))
+
+        # --- BAS DU PANNEAU (AIDE & START) ---
+        help_text = "Controles: Espace (J1) | Haut ou Clic (J2)"
+        help_surf = self.font_tiny.render(help_text, True, (150, 160, 180))
+        screen.blit(help_surf, help_surf.get_rect(center=(screen.get_width() // 2, panel_rect.bottom - 90)))
 
         hint_play = self.font_small.render("Appuyez sur ENTREE pour demarrer", True, (200, 200, 200))
-        hint_exit = self.font_small.render("ECHAP pour quitter", True, (150, 150, 150))
-        screen.blit(hint_play, hint_play.get_rect(center=(screen.get_width() // 2, panel_rect.bottom - 80)))
-        screen.blit(hint_exit, hint_exit.get_rect(center=(screen.get_width() // 2, panel_rect.bottom - 40)))
+        screen.blit(hint_play, hint_play.get_rect(center=(screen.get_width() // 2, panel_rect.bottom - 50)))
 
-        # Gestion des interactions souris/clavier.
+        hint_exit = self.font_tiny.render("ECHAP pour quitter", True, (100, 110, 130))
+        screen.blit(hint_exit, hint_exit.get_rect(center=(screen.get_width() // 2, panel_rect.bottom - 20)))
+
+        hint_mode = self.font_tiny.render("Fleches Gauche/Droite: changer le mode", True, (130, 145, 170))
+        screen.blit(hint_mode, hint_mode.get_rect(center=(screen.get_width() // 2, panel_rect.bottom - 5)))
+
+        modes_list = ["campaign", "solo", "duo"]
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                if btn_rect.collidepoint(event.pos):
+                if btn_edit_rect.collidepoint(event.pos):
                     self.changingName = True
+                elif campagne_rect.collidepoint(event.pos):
+                    self.selected_mode = "campaign"
+                elif solo_rect.collidepoint(event.pos):
+                    self.selected_mode = "solo"
+                elif duo_rect.collidepoint(event.pos):
+                    self.selected_mode = "duo"
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
@@ -92,28 +142,39 @@ class Lobby:
                         self.game.name = self.name
                         self.game.setScores()
                         self.inMenu = False
-                if event.key == pygame.K_ESCAPE:
+                elif event.key == pygame.K_RIGHT:
+                    idx = (modes_list.index(self.selected_mode) + 1) % len(modes_list)
+                    self.selected_mode = modes_list[idx]
+                elif event.key == pygame.K_LEFT:
+                    idx = (modes_list.index(self.selected_mode) - 1) % len(modes_list)
+                    self.selected_mode = modes_list[idx]
+                elif event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     sys.exit()
 
     def _draw_name_input(self, screen, events):
-        """Dessine l'ecran de saisie du pseudo et traite la validation."""
-        # Overlay sombre pour focaliser la saisie.
+        self._draw_menu_background(screen)
+
         overlay = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 220))
+        overlay.fill((0, 0, 0, 200))
         screen.blit(overlay, (0, 0))
 
-        prompt = self.font_medium.render("Entrez votre pseudo :", True, (255, 255, 255))
-        screen.blit(prompt, prompt.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2 - 60)))
+        self.cursor_timer = (self.cursor_timer + 1) % 60
+        cursor = "|" if self.cursor_timer < 30 else ""
 
-        name_surf = self.font_title.render(self.name + "|", True, (0, 255, 255))
-        screen.blit(name_surf, name_surf.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2 + 20)))
+        prompt = self.font_medium.render("Choisissez votre Pseudo", True, (255, 255, 255))
+        screen.blit(prompt, prompt.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2 - 80)))
+
+        name_surf = self.font_title.render(f"{self.name}{cursor}", True, (80, 200, 255))
+        screen.blit(name_surf, name_surf.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2)))
+
+        instr = self.font_small.render("Appuyez sur ENTREE pour valider", True, (150, 150, 150))
+        screen.blit(instr, instr.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2 + 80)))
 
         if self.showError:
             err = self.font_small.render("Le nom ne peut pas etre vide !", True, (255, 50, 50))
             screen.blit(err, err.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2 + 100)))
 
-        # Validation clavier et saisie texte character-by-character.
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
