@@ -8,6 +8,7 @@ class Lobby:
     def __init__(self, screen, game):
         self.inMenu = True
         self.changingName = False
+        self.inLeaderboard = False
         self.name = "Joueur 1"
         self.game = game
         self.showError = False
@@ -46,10 +47,12 @@ class Lobby:
         screen.blit(shade, (0, 0))
 
     def run(self, screen, events):
-        if not self.changingName:
+        if not self.changingName and not self.inLeaderboard:
             self._draw_main_menu(screen, events)
-        else:
+        elif self.changingName:
             self._draw_name_input(screen, events)
+        else:
+            self._draw_leaderboard(screen, events)
 
     def _draw_main_menu(self, screen, events):
         self._draw_menu_background(screen)
@@ -84,13 +87,24 @@ class Lobby:
         edit_txt = self.font_tiny.render("MODIFIER", True, (255, 255, 255))
         screen.blit(edit_txt, edit_txt.get_rect(center=btn_edit_rect.center))
 
+        #--- SECTION LEADERBOARD ---
+        leaderboard_title = self.font_tiny.render("MEILLEURS SCORES", True, (155, 172, 196))
+        screen.blit(leaderboard_title, (panel_rect.left + 50, panel_rect.top + 250))
+
+        btn_leaderboard_rect = pygame.Rect(panel_rect.right - 180, panel_rect.top + 240, 130, 40)
+        is_hover_edit = btn_leaderboard_rect.collidepoint(mx, my)
+        color_btn = (42, 126, 234) if is_hover_edit else (22, 101, 206)
+        pygame.draw.rect(screen, color_btn, btn_leaderboard_rect, border_radius=8)
+        leaderboard_txt = self.font_tiny.render("VOIR", True, (255, 255, 255))
+        screen.blit(leaderboard_txt, leaderboard_txt.get_rect(center=btn_leaderboard_rect.center))
+
         # --- SECTION MODE DE JEU ---
         mode_title = self.font_small.render("SELECTION DU MODE", True, (180, 190, 210))
-        screen.blit(mode_title, (panel_rect.left + 50, panel_rect.top + 260))
+        screen.blit(mode_title, (panel_rect.left + 50, panel_rect.top + 280))
 
-        campagne_rect = pygame.Rect(panel_rect.left + 50, panel_rect.top + 290, 220, 60)
-        solo_rect = pygame.Rect(panel_rect.left + 290, panel_rect.top + 290, 220, 60)
-        duo_rect = pygame.Rect(panel_rect.left + 530, panel_rect.top + 290, 220, 60)
+        campagne_rect = pygame.Rect(panel_rect.left + 50, panel_rect.top + 310, 220, 60)
+        solo_rect = pygame.Rect(panel_rect.left + 290, panel_rect.top + 310, 220, 60)
+        duo_rect = pygame.Rect(panel_rect.left + 530, panel_rect.top + 310, 220, 60)
 
         modes_info = (
             (campagne_rect, "campaign", "CAMPAGNE"),
@@ -129,6 +143,8 @@ class Lobby:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if btn_edit_rect.collidepoint(event.pos):
                     self.changingName = True
+                elif btn_leaderboard_rect.collidepoint(event.pos):
+                    self.inLeaderboard = True
                 elif campagne_rect.collidepoint(event.pos):
                     self.selected_mode = "campaign"
                 elif solo_rect.collidepoint(event.pos):
@@ -188,3 +204,19 @@ class Lobby:
             elif event.type == pygame.TEXTINPUT:
                 if len(self.name) < 12:
                     self.name += event.text
+
+    def _draw_leaderboard(self,screen, events):
+        self._draw_menu_background(screen)
+        overlay = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 200))
+        screen.blit(overlay, (0, 0))
+        panel_w, panel_h = 800, 480
+        panel_rect = pygame.Rect((screen.get_width() - panel_w) // 2, (screen.get_height() - panel_h) // 2, panel_w, panel_h)
+
+        pygame.draw.rect(screen, (8, 12, 24, 240), panel_rect, border_radius=20)
+        pygame.draw.rect(screen, (96, 144, 230), panel_rect, width=2, border_radius=20)
+
+        title_surf = self.font_title.render("MEILLEURS SCORES", True, (248, 250, 255))
+        title_rect = title_surf.get_rect(center=(screen.get_width() // 2, panel_rect.top + 60))
+        screen.blit(title_surf, title_rect)
+
