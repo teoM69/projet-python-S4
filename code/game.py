@@ -76,12 +76,22 @@ class Game:
         """Extrait le record du joueur courant, ou 0 si absent."""
         return data["personal_bests"].get(self.name, 0)
 
+    def getBestScores(self, data):
+        top_3 = []
+        for score in data["personal_bests"].values():
+            top_3.append(score)
+            top_3.sort(reverse=True)
+            top_3 = top_3[:3]
+            
+        return top_3
+
     def setScores(self):
        """Recharge les scores courant depuis le fichier persistant."""
        data = self.loadFile()
        self.bestScore = self.getBestScore(data)
        self.personalBest = self.getPersonalbest(data)
-       print(self.personalBest)
+       top_3 = self.getBestScores(data)
+       print(top_3)
 
     def set_screen(self, screen):
         """Met a jour la surface principale et reajuste le monde."""

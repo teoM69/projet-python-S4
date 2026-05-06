@@ -139,8 +139,6 @@ class Lobby:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     if self.name.strip() != "":
-                        self.game.name = self.name
-                        self.game.setScores()
                         self.inMenu = False
                 elif event.key == pygame.K_RIGHT:
                     idx = (modes_list.index(self.selected_mode) + 1) % len(modes_list)
@@ -181,6 +179,8 @@ class Lobby:
                     if self.name.strip() != "":
                         self.changingName = False
                         self.showError = False
+                        self.game.name = self.name
+                        self.game.setScores()
                     else:
                         self.showError = True
                 elif event.key == pygame.K_BACKSPACE:

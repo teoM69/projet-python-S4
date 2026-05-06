@@ -69,6 +69,8 @@ def build_players(mode, screen_height):
     spawn_y = screen_height - 50 - 165 - 55
     players = [Player(PLAYER_RESPAWN_X, spawn_y)]
     lobby.name = players[0].nom
+    game.name = lobby.name
+    game.setScores()
     if mode == "duo":
         players.append(Player(PLAYER_RESPAWN_X + 80, spawn_y))
     return players
