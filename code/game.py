@@ -90,7 +90,6 @@ class Game:
        self.bestScore = self.getBestScore(data)
        self.personalBest = self.getPersonalbest(data)
        self.top3 = self.getBestScores(data)
-       print(self.top3)
 
     def set_screen(self, screen):
         """Met a jour la surface principale et reajuste le monde."""

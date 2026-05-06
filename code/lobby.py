@@ -156,6 +156,7 @@ class Lobby:
                 if event.key == pygame.K_RETURN:
                     if self.name.strip() != "":
                         self.game.name = self.name
+                        self.game.setScores()
                         self.inMenu = False
                 elif event.key == pygame.K_RIGHT:
                     idx = (modes_list.index(self.selected_mode) + 1) % len(modes_list)
@@ -207,6 +208,7 @@ class Lobby:
     def _draw_leaderboard(self,screen, events):
         self.game.setScores()
         self._draw_menu_background(screen)
+        mx, my = pygame.mouse.get_pos()
         overlay = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 200))
         screen.blit(overlay, (0, 0))
@@ -222,7 +224,7 @@ class Lobby:
 
         start_y = title_rect.bottom + 50
         line_spacing = 60
-        
+
         for i, entry in enumerate(self.game.top3):
             name, score = entry
   
@@ -231,4 +233,17 @@ class Lobby:
             
             score_rect = score_surf.get_rect(center=(screen.get_width() // 2, start_y + (i * line_spacing)))
             screen.blit(score_surf, score_rect)
+
+        btn_width = 130
+        btn_back_rect = pygame.Rect(0, panel_rect.top + 430, btn_width, 40)
+        btn_back_rect.centerx = panel_rect.centerx  #pour centrer horizontalement
+        is_hover_edit = btn_back_rect.collidepoint(mx, my)
+        color_btn = (42, 126, 234) if is_hover_edit else (22, 101, 206)
+        pygame.draw.rect(screen, color_btn, btn_back_rect, border_radius=8)
+        btn_txt = self.font_tiny.render("RETOUR", True, (255, 255, 255))
+        screen.blit(btn_txt, btn_txt.get_rect(center=btn_back_rect.center))
         
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if btn_back_rect.collidepoint(event.pos):
+                    self.inLeaderboard = False
