@@ -126,9 +126,17 @@ class ObstacleGenerator:
 
     def update(self, speed):
         """Met a jour les obstacles et supprime ceux sortis de l'ecran."""
+        removed_count = 0
         for obstacle in self.obstacles:
             obstacle.update(speed)
-        self.obstacles = [ob for ob in self.obstacles if ob.rect.right > 0]
+        kept = []
+        for obstacle in self.obstacles:
+            if obstacle.rect.right > 0:
+                kept.append(obstacle)
+            else:
+                removed_count += 1
+        self.obstacles = kept
+        return removed_count
 
     def draw(self, surface):
         """Dessine tous les obstacles actifs."""
