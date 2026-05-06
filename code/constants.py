@@ -16,6 +16,7 @@ DEFAULT_OBSTACLE_SPEED = 5.0
 
 # Etats de la machine de jeu principale.
 STATE_MENU = "menu"
+STATE_TUTORIAL = "tutorial"
 STATE_PLAYING = "playing"
 STATE_GAME_OVER = "game_over"
 
