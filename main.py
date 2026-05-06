@@ -13,6 +13,7 @@ from code.game import Game
 from code.lobby import Lobby
 from code.Player import Player
 from code.ObstacleGenerator import ObstacleGenerator
+from code.objectives import ObjectiveManager
 from code.VisualEffects import VisualEffects
 from code.sound import Sound
 from code.campaign import CampaignMode
@@ -88,7 +89,7 @@ def reset_players(game, players):
         player.is_flipping = False
 
 
-def start_new_run(game, players, obstacle_generator, visual_effects, now_ms):
+def start_new_run(game, players, obstacle_generator, visual_effects, objective_manager, now_ms):
     """Reinitialise une partie complete et renvoie les timers de depart.
 
     Valeurs retour:
@@ -102,6 +103,7 @@ def start_new_run(game, players, obstacle_generator, visual_effects, now_ms):
     reset_players(game, players)
     obstacle_generator.obstacles.clear()
     visual_effects.clear()
+    objective_manager.start_run()
     spawn_interval = random.randint(OBSTACLE_SPAWN_MIN_MS, OBSTACLE_SPAWN_MAX_MS)
     return now_ms, now_ms, spawn_interval
 
@@ -122,6 +124,7 @@ interface = Interface(screen)
 visual_fx = VisualEffects()
 campaign = CampaignMode()
 sound = Sound()
+objective_manager = ObjectiveManager()
 sound.playBackgroundMusic()
 
 # Joueurs actifs: un seul en solo, deux en duo.
@@ -211,14 +214,14 @@ while running:
             if event.type == pygame.KEYDOWN:
                 if game_state == STATE_TUTORIAL:
                     if event.key == pygame.K_RETURN:
-                        run_start_time, last_spawn, spawn_interval = start_new_run(game, players, ob_gen, visual_fx, now)
+                        run_start_time, last_spawn, spawn_interval = start_new_run(game, players, ob_gen, visual_fx, objective_manager, now)
                         game_state = STATE_PLAYING
                     elif event.key == pygame.K_ESCAPE:
                         lobby.inMenu = True
                         game_state = STATE_MENU
                 elif game_state == STATE_GAME_OVER:
                     if event.key == pygame.K_r:
-                        run_start_time, last_spawn, spawn_interval = start_new_run(game, players, ob_gen, visual_fx, now)
+                        run_start_time, last_spawn, spawn_interval = start_new_run(game, players, ob_gen, visual_fx, objective_manager, now)
                         lobby.inMenu = False
                         death_time_ms = None
                         paused = False
@@ -229,7 +232,7 @@ while running:
                 elif game_state == STATE_LEVEL_WON:
                     if event.key == pygame.K_RETURN:
                         if campaign.advance_level():
-                            run_start_time, last_spawn, spawn_interval = start_new_run(game, players, ob_gen, visual_fx, now)
+                            run_start_time, last_spawn, spawn_interval = start_new_run(game, players, ob_gen, visual_fx, objective_manager, now)
                             game_state = STATE_PLAYING
                         else:
                             game_state = STATE_CAMPAIGN_COMPLETE
@@ -303,10 +306,10 @@ while running:
                     spawn_interval = random.randint(OBSTACLE_SPAWN_MIN_MS, OBSTACLE_SPAWN_MAX_MS)
 
             elapsed_s = (now - run_start_time) / 1000.0
-            speed_bonus = max(0.0, game.gameSpeed - GAME_SPEED_START) * SCORE_SPEED_BONUS_FACTOR
-            game.score = int((elapsed_s * SCORE_BASE_PER_SEC) + (elapsed_s * speed_bonus))
+            objective_manager.update_elapsed(elapsed_s)
 
-            ob_gen.update(game.gameSpeed * frame_scale)
+            passed_obstacles = ob_gen.update(game.gameSpeed * frame_scale)
+            objective_manager.register_obstacles_passed(passed_obstacles)
 
             for index, player in enumerate(players):
                 if not player.alive:
@@ -341,7 +344,19 @@ while running:
                         except ValueError:
                             pass
 
+            reward = objective_manager.consume_reward()
+            if reward:
+                game.objective_bonus += reward
+
+            speed_bonus = max(0.0, game.gameSpeed - GAME_SPEED_START) * SCORE_SPEED_BONUS_FACTOR
+            game.score = int((elapsed_s * SCORE_BASE_PER_SEC) + (elapsed_s * speed_bonus) + game.objective_bonus)
+
             if not any(player.alive for player in players):
+                reward = objective_manager.consume_reward()
+                if reward:
+                    game.objective_bonus += reward
+                speed_bonus = max(0.0, game.gameSpeed - GAME_SPEED_START) * SCORE_SPEED_BONUS_FACTOR
+                game.score = int((elapsed_s * SCORE_BASE_PER_SEC) + (elapsed_s * speed_bonus) + game.objective_bonus)
                 game.end()
                 sound.playGameOverSound()
                 paused = False
@@ -364,6 +379,7 @@ while running:
             player.draw(screen)
 
         interface.show_score(game.score, game.bestScore)#jai aussi modifier ca 
+        interface.show_objective(objective_manager.current)
 
         if game_state == STATE_TUTORIAL:
             interface.show_tutorial(lobby.selected_mode)

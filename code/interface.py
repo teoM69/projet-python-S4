@@ -16,6 +16,7 @@ class Interface:
         self.font_main = pygame.font.SysFont('Arial', 32)
         self.font_title = pygame.font.SysFont('Arial', 72, bold=True)
         self.font_small = pygame.font.SysFont('Arial', 24)
+        self.font_tiny = pygame.font.SysFont('Arial', 20)
 
         # Palette UI.
         self.color_white = (255, 255, 255)
@@ -129,6 +130,42 @@ class Interface:
     def show_pause(self):
         """Affiche l'ecran de pause."""
         self.show_message("PAUSE", "Appuyez sur P pour reprendre", self.color_white)
+
+    def show_objective(self, objective):
+        """Affiche la mission secondaire courante dans un petit panneau."""
+        if objective is None:
+            return
+
+        panel_w = min(470, max(300, self.screen.get_width() // 2))
+        panel_h = 165
+        panel = pygame.Rect(18, 86, panel_w, panel_h)
+
+        panel_surf = pygame.Surface((panel.width, panel.height), pygame.SRCALPHA)
+        panel_surf.fill((12, 18, 36, 210))
+        pygame.draw.rect(panel_surf, (255, 200, 0, 100), panel_surf.get_rect(), width=2, border_radius=14)
+        self.screen.blit(panel_surf, panel.topleft)
+
+        title = self.font_tiny.render("MISSION SECONDAIRE", True, (255, 200, 0))
+        self.screen.blit(title, (panel.left + 14, panel.top + 10))
+
+        mission_color = (245, 245, 245)
+        if objective.completed:
+            mission_color = (148, 243, 170)
+        elif objective.failed:
+            mission_color = (255, 120, 120)
+
+        mission = self.font_small.render(objective.title, True, mission_color)
+        self.screen.blit(mission, (panel.left + 14, panel.top + 30))
+
+        desc = self.font_tiny.render(objective.description, True, (190, 200, 215))
+        self.screen.blit(desc, (panel.left + 14, panel.top + 66))
+
+        progress = self.font_tiny.render(f"Progression: {objective.progress_label()}", True, (225, 225, 225))
+        self.screen.blit(progress, (panel.left + 14, panel.top + 96))
+
+        reward_color = (148, 243, 170) if objective.completed else (255, 215, 0)
+        status = self.font_tiny.render(f"{objective.status_label()} +{objective.reward} pts", True, reward_color)
+        self.screen.blit(status, (panel.left + 14, panel.top + 120))
 
     def show_tutorial(self, selected_mode):
         """Affiche un tutoriel rapide avant le debut de la partie."""

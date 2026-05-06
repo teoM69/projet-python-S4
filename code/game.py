@@ -18,6 +18,7 @@ class Game:
         self.gameSpeed = 5.0
         self.difficulty = 1.0
         self.score = 0
+        self.objective_bonus = 0
 
         # Donnees joueur et scores.
         self.name = ""
@@ -33,6 +34,7 @@ class Game:
         # Demarrer ou redemarrer.
         self.inGame = True
         self.score = 0
+        self.objective_bonus = 0
         self.difficulty = 1.0
         self.gameSpeed = 5.0
         # self.player.spawn()
