@@ -130,6 +130,50 @@ class Interface:
         """Affiche l'ecran de pause."""
         self.show_message("PAUSE", "Appuyez sur P pour reprendre", self.color_white)
 
+    def show_tutorial(self, selected_mode):
+        """Affiche un tutoriel rapide avant le debut de la partie."""
+        self.draw_overlay()
+
+        panel_w = min(820, self.screen.get_width() - 80)
+        panel_h = min(430, self.screen.get_height() - 80)
+        panel = pygame.Rect(0, 0, panel_w, panel_h)
+        panel.center = (self.screen.get_width() // 2, self.screen.get_height() // 2)
+
+        panel_surf = pygame.Surface((panel.width, panel.height), pygame.SRCALPHA)
+        panel_surf.fill((12, 18, 36, 235))
+        pygame.draw.rect(panel_surf, (90, 170, 255, 160), panel_surf.get_rect(), width=2, border_radius=18)
+        self.screen.blit(panel_surf, panel.topleft)
+
+        title = self.font_title.render("TUTORIEL", True, (140, 220, 255))
+        self.screen.blit(title, title.get_rect(center=(panel.centerx, panel.top + 55)))
+
+        mode_label = "Mode solo" if selected_mode == "solo" else "Mode duo" if selected_mode == "duo" else "Mode campagne"
+        subtitle = self.font_small.render(mode_label, True, (200, 210, 225))
+        self.screen.blit(subtitle, subtitle.get_rect(center=(panel.centerx, panel.top + 110)))
+
+        if selected_mode == "duo":
+            lines = [
+                "Joueur 1 : Espace pour changer de gravite",
+                "Joueur 2 : Fleche haut pour changer de gravite",
+                "Evite les obstacles et reste sur les bonnes surfaces",
+                "Le score augmente avec le temps et la vitesse",
+            ]
+        else:
+            lines = [
+                "Espace : changer de gravite",
+                "P : pause",
+                "Evite les obstacles et reste colle aux surfaces",
+                "Le score augmente avec le temps et la vitesse",
+            ]
+
+        start_y = panel.top + 165
+        for index, line in enumerate(lines):
+            line_surf = self.font_small.render(line, True, (245, 245, 245))
+            self.screen.blit(line_surf, line_surf.get_rect(center=(panel.centerx, start_y + index * 42)))
+
+        hint = self.font_small.render("Appuyez sur ENTREE pour commencer", True, (148, 243, 170))
+        self.screen.blit(hint, hint.get_rect(center=(panel.centerx, panel.bottom - 48)))
+
     def show_game_over(self):
         """Affiche l'ecran de fin de partie."""
         self.show_message("GAME OVER", "Appuyez sur R pour rejouer", self.color_red)

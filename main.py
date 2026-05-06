@@ -39,6 +39,7 @@ from code.constants import (
     GAME_OVER_DELAY_MS,
     GAME_OVER_RETURN_LOBBY_MS,
     STATE_MENU,
+    STATE_TUTORIAL,
     STATE_PLAYING,
     STATE_GAME_OVER,
     TARGET_FPS,
@@ -197,17 +198,22 @@ while running:
         if not lobby.inMenu:
             players = build_players(lobby.selected_mode, screen.get_height())
             switch_request_until = [0 for _ in players]
-            now = pygame.time.get_ticks()
-            run_start_time, last_spawn, spawn_interval = start_new_run(game, players, ob_gen, visual_fx, now)
             paused = False
             death_time_ms = None
-            game_state = STATE_PLAYING
+            game_state = STATE_TUTORIAL
     else:
         now = pygame.time.get_ticks()
 
         for event in events:
             if event.type == pygame.KEYDOWN:
-                if game_state == STATE_GAME_OVER:
+                if game_state == STATE_TUTORIAL:
+                    if event.key == pygame.K_RETURN:
+                        run_start_time, last_spawn, spawn_interval = start_new_run(game, players, ob_gen, visual_fx, now)
+                        game_state = STATE_PLAYING
+                    elif event.key == pygame.K_ESCAPE:
+                        lobby.inMenu = True
+                        game_state = STATE_MENU
+                elif game_state == STATE_GAME_OVER:
                     if event.key == pygame.K_r:
                         run_start_time, last_spawn, spawn_interval = start_new_run(game, players, ob_gen, visual_fx, now)
                         lobby.inMenu = False
@@ -352,6 +358,9 @@ while running:
             player.draw(screen)
 
         interface.show_score(game.score, game.bestScore)#jai aussi modifier ca 
+
+        if game_state == STATE_TUTORIAL:
+            interface.show_tutorial(lobby.selected_mode)
 
         if game_state == STATE_PLAYING and paused:
             interface.show_pause()
