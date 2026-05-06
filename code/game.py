@@ -24,6 +24,7 @@ class Game:
         self.name = ""
         self.bestScore = 0
         self.personalBest = 0
+        self.top3 = []
         self.contactObstacleType = ""
 
         # Monde de jeu (plateformes et ambiance).
@@ -77,13 +78,18 @@ class Game:
     def getPersonalbest(self, data):
         """Extrait le record du joueur courant, ou 0 si absent."""
         return data["personal_bests"].get(self.name, 0)
+    
+    def getBestScores(self, data):
+        players_data = list(data["personal_bests"].items())
+        players_data.sort(key=lambda x: x[1], reverse=True)
+        return players_data[:3]
 
     def setScores(self):
        """Recharge les scores courant depuis le fichier persistant."""
        data = self.loadFile()
        self.bestScore = self.getBestScore(data)
        self.personalBest = self.getPersonalbest(data)
-       print(self.personalBest)
+       self.top3 = self.getBestScores(data)
 
     def set_screen(self, screen):
         """Met a jour la surface principale et reajuste le monde."""
