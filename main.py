@@ -14,6 +14,7 @@ from code.lobby import Lobby
 from code.Player import Player
 from code.ObstacleGenerator import ObstacleGenerator
 from code.VisualEffects import VisualEffects
+from code.sound import Sound
 from code.campaign import CampaignMode
 from code.constants import (
     OBSTACLE_SPAWN_MIN_MS,
@@ -119,6 +120,8 @@ lobby = Lobby(screen, game)
 interface = Interface(screen)
 visual_fx = VisualEffects()
 campaign = CampaignMode()
+sound = Sound()
+sound.playBackgroundMusic()
 
 # Joueurs actifs: un seul en solo, deux en duo.
 players = build_players(lobby.selected_mode, screen.get_height())
@@ -309,6 +312,7 @@ while running:
 
                 if switch_request_until[index] >= now and can_switch_on_surface(player, floor_y, ceiling_y):
                     player.switchGravity()
+                    sound.playGravitySwitchSound()
                     switch_request_until[index] = 0
                 elif switch_request_until[index] < now:
                     switch_request_until[index] = 0
@@ -325,6 +329,7 @@ while running:
                     if player.rect.colliderect(ob.rect):
                         visual_fx.spawn_for_obstacle(ob.type, ob.rect.center)
                         ob.apply_effect(player)
+                        sound.playObstacleSound()
                         try:
                             ob_gen.obstacles.remove(ob)
                         except ValueError:
@@ -332,6 +337,7 @@ while running:
 
             if not any(player.alive for player in players):
                 game.end()
+                sound.playGameOverSound()
                 paused = False
                 ob_gen.obstacles.clear()
                 if death_time_ms is None:
