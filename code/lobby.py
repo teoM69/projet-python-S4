@@ -155,6 +155,7 @@ class Lobby:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     if self.name.strip() != "":
+                        self.game.name = self.name
                         self.inMenu = False
                 elif event.key == pygame.K_RIGHT:
                     idx = (modes_list.index(self.selected_mode) + 1) % len(modes_list)
@@ -204,6 +205,7 @@ class Lobby:
                     self.name += event.text
 
     def _draw_leaderboard(self,screen, events):
+        self.game.setScores()
         self._draw_menu_background(screen)
         overlay = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 200))
@@ -217,3 +219,16 @@ class Lobby:
         title_surf = self.font_title.render("MEILLEURS SCORES", True, (248, 250, 255))
         title_rect = title_surf.get_rect(center=(screen.get_width() // 2, panel_rect.top + 60))
         screen.blit(title_surf, title_rect)
+
+        start_y = title_rect.bottom + 50
+        line_spacing = 60
+        
+        for i, entry in enumerate(self.game.top3):
+            name, score = entry
+  
+            text = f"{i + 1}. {name} {'.' * (20 - len(name))} {score}"
+            score_surf = self.font_small.render(text, True, (248, 250, 255))
+            
+            score_rect = score_surf.get_rect(center=(screen.get_width() // 2, start_y + (i * line_spacing)))
+            screen.blit(score_surf, score_rect)
+        

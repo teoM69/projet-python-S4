@@ -80,12 +80,9 @@ class Game:
         return data["personal_bests"].get(self.name, 0)
     
     def getBestScores(self, data):
-        top3 = []
-        for score in data["personal_bests"].values():
-            top3.append(score)
-            top3.sort(reverse=True)
-            top3 = top3[:3]
-        return top3
+        players_data = list(data["personal_bests"].items())
+        players_data.sort(key=lambda x: x[1], reverse=True)
+        return players_data[:3]
 
     def setScores(self):
        """Recharge les scores courant depuis le fichier persistant."""
