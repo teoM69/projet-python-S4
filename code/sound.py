@@ -24,7 +24,7 @@ class Sound:
             self.gravity_sfx = pygame.mixer.Sound("assets/Sounds/sound.gravity.mp3")
             self.obstacle_sfx = pygame.mixer.Sound("assets/Sounds/sound.obstacle.mp3")
         except pygame.error as e:
-            print(f"Erreur lors du chargement des sons : {e}")
+            print(f"Erreur lors du chargement des sons : {e}") # Affiche une erreur mais continue l'execution pour permettre de jouer sans son si
 
         # Charge la piste longue de fond via pygame.mixer.music (streaming).
         try:
@@ -57,9 +57,9 @@ class Sound:
         self.obstacle_sfx.play()
 
 
-    def toggleMusic(self):
+    def toggleMusic(self): 
         """Bascule l'etat musique ON/OFF et applique immediatement le changement."""
-        self.backgroundMusicOn = not self.backgroundMusicOn
+        self.backgroundMusicOn = not self.backgroundMusicOn 
         if not self.backgroundMusicOn:
             self.stopBackgroundMusic()
         else:
