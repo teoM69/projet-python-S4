@@ -393,7 +393,7 @@ while running:
 
         # HUD permanent: score courant + meilleur score.
         interface.show_score(game.score, game.bestScore)
-    interface.show_objective(objective_manager.current)
+        interface.show_objective(objective_manager.current)
 
         if game_state == STATE_TUTORIAL:
             interface.show_tutorial(lobby.selected_mode)
