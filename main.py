@@ -239,6 +239,7 @@ while running:
             
                 elif game_state == STATE_CAMPAIGN_COMPLETE:
                     if event.key in (pygame.K_RETURN, pygame.K_ESCAPE, pygame.K_m):
+                        campaign.current_level_idx = 0
                         lobby.inMenu = True
                         game_state = STATE_MENU
                 else:
