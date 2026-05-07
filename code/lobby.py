@@ -243,14 +243,21 @@ class Lobby:
         start_y = title_rect.bottom + 50
         line_spacing = 60
 
-        for i, entry in enumerate(self.game.top3):
-            name, score = entry
-  
-            text = f"{i + 1}. {name} {'.' * (20 - len(name))} {score}"
-            score_surf = self.font_small.render(text, True, (248, 250, 255))
-            
-            score_rect = score_surf.get_rect(center=(screen.get_width() // 2, start_y + (i * line_spacing)))
-            screen.blit(score_surf, score_rect)
+        if self.game.top3:
+            for i, entry in enumerate(self.game.top3):
+                name, score = entry
+    
+                text = f"{i + 1}. {name} {'.' * (20 - len(name))} {score}"
+                score_surf = self.font_small.render(text, True, (248, 250, 255))
+                
+                score_rect = score_surf.get_rect(center=(screen.get_width() // 2, start_y + (i * line_spacing)))
+                screen.blit(score_surf, score_rect)
+        else:
+                text = "Aucun score enregistré pour le moment"
+                score_surf = self.font_small.render(text, True, (248, 250, 255))
+                
+                score_rect = score_surf.get_rect(center=(screen.get_width() // 2, start_y))
+                screen.blit(score_surf, score_rect)
 
         btn_width = 130
         btn_back_rect = pygame.Rect(0, panel_rect.top + 430, btn_width, 40)
