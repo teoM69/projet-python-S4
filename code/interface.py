@@ -48,6 +48,11 @@ class Interface:
         self._message_cache = {}
 
     def show_score(self, score, best_score):
+        """Dessine le panneau score/meilleur score avec cache des surfaces texte.
+
+        Le cache evite de rerasteriser les memes valeurs a chaque frame et
+        reduit les allocations Pygame inutiles.
+        """
         if score != self._cached_score:
             self._cached_score = score
             self._score_surf = self.font_main.render(f"  {score}", True, self.color_white)
