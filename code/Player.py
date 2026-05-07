@@ -31,6 +31,7 @@ class Player:
         self.rect = pygame.Rect(int(x), int(y), self.width, self.height)
         self.alive = True
 
+        playerColor = (255, 100, 100)
         # Chargement securise des images d'animation.
         # Si un asset manque, une surface de secours est creee.
         anim_dir = os.path.join('assets', 'Images', 'mov_animation', 'mov_white_animation')
@@ -60,6 +61,12 @@ class Player:
         self.walk_inverted = [safe_load('mov1_-1.img.png.png'), safe_load('mov2_-1.img.png.png'), safe_load('mov1_-1.img.png.png')]
         self.flip_imgs = [safe_load('flip1.img.png.png'), safe_load('flip2.img.png.png')]
         self.dead_image = safe_load('dead.img.png.png')
+
+        #colorer
+        self.walk_normal = [self.colorize(img, playerColor) for img in self.walk_normal]
+        self.walk_inverted = [self.colorize(img, playerColor) for img in self.walk_inverted]
+        self.flip_imgs = [self.colorize(img, playerColor) for img in self.flip_imgs]
+        self.dead_image = self.colorize(self.dead_image, playerColor)
 
         self.current_image = self.walk_normal[0]
         self.anim_index = 0
@@ -188,3 +195,9 @@ class Player:
 
         # Affiche l'image courante a la position du rectangle.
         screen.blit(self.current_image, self.rect.topleft)
+
+    def colorize(self, surface, color):
+        #colorise le perso
+        coloured_surface = surface.copy()
+        coloured_surface.fill(color, special_flags=pygame.BLEND_RGBA_MULT)
+        return coloured_surface
