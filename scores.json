@@ -1,5 +1,7 @@
 {
-    "global_best": 0,
-    "personal_bests": {},
-    "last_name": "Joueur 1"
+    "global_best": 1038,
+    "personal_bests": {
+        "Teo": 1025
+    },
+    "last_name": "Teo"
 }
