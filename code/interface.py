@@ -53,7 +53,7 @@ class Interface:
         Le cache evite de rerasteriser les memes valeurs a chaque frame et
         reduit les allocations Pygame inutiles.
         """
-        if score != self._cached_score:
+        if score != self._cached_score: 
             self._cached_score = score
             self._score_surf = self.font_main.render(f"  {score}", True, self.color_white)
         if best_score != self._cached_best:

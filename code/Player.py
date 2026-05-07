@@ -33,10 +33,11 @@ class Player:
 
         # Chargement securise des images d'animation.
         # Si un asset manque, une surface de secours est creee.
-        anim_dir = os.path.join('assets', 'Images', 'mov_animation')
+        anim_dir = os.path.join('assets', 'Images', 'mov_animation', 'mov_white_animation')
 
         def safe_load(name):
-            path = os.path.join(anim_dir, name)
+            path = os.path.join(anim_dir, name) 
+            """Charge une image, l'optimise, la redimensionne, ou crée un carré vert en cas d'erreur."""
             try:
                 img = pygame.image.load(path)
                 try:
@@ -55,10 +56,10 @@ class Player:
                 return surf
 
         # Prefere les fichiers d'animation disponibles ; repli sur des surfaces unies.
-        self.walk_normal = [safe_load('mov1_1.img.png'), safe_load('mov2_1.img.png'), safe_load('mov1_1.img.png')]
-        self.walk_inverted = [safe_load('mov1_-1.img.png'), safe_load('mov2_-1.img.png'), safe_load('mov1_-1.img.png')]
-        self.flip_imgs = [safe_load('flip1.img.png'), safe_load('flip2.img.png')]
-        self.dead_image = safe_load('dead.img.png')
+        self.walk_normal = [safe_load('mov1_1.img.png.png'), safe_load('mov2_1.img.png.png'), safe_load('mov1_1.img.png.png')]
+        self.walk_inverted = [safe_load('mov1_-1.img.png.png'), safe_load('mov2_-1.img.png.png'), safe_load('mov1_-1.img.png.png')]
+        self.flip_imgs = [safe_load('flip1.img.png.png'), safe_load('flip2.img.png.png')]
+        self.dead_image = safe_load('dead.img.png.png')
 
         self.current_image = self.walk_normal[0]
         self.anim_index = 0
@@ -119,12 +120,12 @@ class Player:
         """Met a jour animation + physique verticale avec contraintes support."""
         # Temporisation de l'animation.
         self.anim_timer += time_scale
-        if self.anim_timer > 6:
-            self.anim_index += 1
+        if self.anim_timer > 6: # Change d'image toutes les 6 frames environ
+            self.anim_index += 1 
             self.anim_timer = 0
 
         if self.is_flipping:
-            if self.anim_index >= len(self.flip_imgs):
+            if self.anim_index >= len(self.flip_imgs): # Fin de l'animation de flip
                 self.is_flipping = False
                 self.anim_index = 0
             else:
@@ -138,18 +139,18 @@ class Player:
 
         # Applique le mouvement vertical avec une petite tolerance de rattrapage pour eviter
         # de traverser occasionnellement des supports fins ou mobiles.
-        prev_y = self.playerPosition.y
-        vertical_step = self.gravity_speed * max(0.5, time_scale)
-        next_y = prev_y + (vertical_step * self.gravity_direction)
+        prev_y = self.playerPosition.y # Position avant mouvement
+        vertical_step = self.gravity_speed * max(0.5, time_scale) # position a parcourir 
+        next_y = prev_y + (vertical_step * self.gravity_direction) # Nouvelle position théorique
         snap_tolerance = max(18, vertical_step * 3)
 
-        if self.gravity_direction < 0 and ceiling_y is not None:
+        if self.gravity_direction < 0 and ceiling_y is not None: # Si le joueur est en train de tomber vers le haut
             min_y = ceiling_y
             if next_y <= min_y and prev_y >= (min_y - snap_tolerance):
                 next_y = min_y
                 self.is_flipping = False
 
-        if self.gravity_direction > 0 and floor_y is not None:
+        if self.gravity_direction > 0 and floor_y is not None: # Si le joueur est en train de tomber vers le bas
             max_y = floor_y - self.height
             if next_y >= max_y and prev_y <= (max_y + snap_tolerance):
                 next_y = max_y
