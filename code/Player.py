@@ -63,6 +63,9 @@ class Player:
 
         #colorer
         self.walk_normal = [self.colorize(img, playerColor) for img in self.walk_normal]
+        self.walk_inverted = [self.colorize(img, playerColor) for img in self.walk_inverted]
+        self.flip_imgs = [self.colorize(img, playerColor) for img in self.flip_imgs]
+        self.dead_image = self.colorize(self.dead_image, playerColor)
 
         self.current_image = self.walk_normal[0]
         self.anim_index = 0
