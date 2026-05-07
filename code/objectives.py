@@ -12,6 +12,18 @@ import random
 
 @dataclass
 class SecondaryObjective:
+    """Modele d'une mission secondaire pour une run.
+
+    Attributs:
+    - title: intitule court affiche dans l'UI.
+    - description: consigne lisible pour le joueur.
+    - kind: type de logique de progression (temps, obstacles, etc.).
+    - target: objectif numerique a atteindre.
+    - reward: bonus de score attribue a la validation.
+    - progress: progression courante de la mission.
+    - completed/failed: etat final de la mission.
+    - reward_claimed: evite de donner la recompense plusieurs fois.
+    """
     title: str
     description: str
     kind: str
@@ -23,6 +35,7 @@ class SecondaryObjective:
     reward_claimed: bool = False
 
     def update_elapsed(self, elapsed_seconds):
+        """Met a jour la progression des objectifs bases sur le temps de survie."""
         if self.kind != "survive_time" or self.completed or self.failed:
             return
         self.progress = min(self.target, int(elapsed_seconds))
@@ -30,6 +43,7 @@ class SecondaryObjective:
             self.completed = True
 
     def register_obstacles_passed(self, count):
+        """Incremente la progression des objectifs d'esquive d'obstacles."""
         if self.kind != "pass_obstacles" or self.completed or self.failed:
             return
         self.progress = min(self.target, self.progress + max(0, count))
@@ -37,12 +51,14 @@ class SecondaryObjective:
             self.completed = True
 
     def consume_reward(self):
+        """Retourne la recompense une seule fois une fois l'objectif valide."""
         if self.completed and not self.reward_claimed:
             self.reward_claimed = True
             return self.reward
         return 0
 
     def status_label(self):
+        """Renvoie le libelle d'etat a afficher dans l'interface."""
         if self.completed:
             return "Reussie"
         if self.failed:
@@ -50,6 +66,7 @@ class SecondaryObjective:
         return "En cours"
 
     def progress_label(self):
+        """Formate la progression selon le type de mission."""
         if self.kind == "survive_time":
             return f"{min(self.progress, self.target)}/{self.target} s"
         if self.kind == "pass_obstacles":
@@ -60,8 +77,17 @@ class SecondaryObjective:
 
 
 class ObjectiveManager:
+    """Orchestre les missions secondaires disponibles pendant une run.
+
+    Le manager choisit une mission au debut de partie, relaie les mises a jour
+    de progression, puis expose la recompense une fois la mission terminee.
+    """
     def __init__(self):
+        # Mission active pendant la run (None avant start_run).
         self.current = None
+
+        # Bibliotheque de missions templates. Chaque run clone une entree
+        # pour repartir sur un etat vierge (progress/reward non consomme).
         self.templates = [
             SecondaryObjective(
                 "Survivre 30 secondes",
@@ -101,6 +127,7 @@ class ObjectiveManager:
         ]
 
     def _clone(self, template):
+        """Clone un template en nouvelle instance mutable pour la run courante."""
         return SecondaryObjective(
             template.title,
             template.description,
@@ -110,20 +137,24 @@ class ObjectiveManager:
         )
 
     def start_run(self):
+        """Selectionne aleatoirement une mission et l'active pour la run."""
         self.current = self._clone(random.choice(self.templates))
         return self.current
 
     def update_elapsed(self, elapsed_seconds):
+        """Relaye la progression temporelle a la mission active."""
         if self.current is None:
             return
         self.current.update_elapsed(elapsed_seconds)
 
     def register_obstacles_passed(self, count):
+        """Relaye le nombre d'obstacles evites a la mission active."""
         if self.current is None:
             return
         self.current.register_obstacles_passed(count)
 
     def consume_reward(self):
+        """Recupere la recompense de mission si elle est disponible."""
         if self.current is None:
             return 0
         return self.current.consume_reward()

@@ -2,10 +2,21 @@ import os
 import pygame
 import sys
 
+"""Ecran de lobby / menu principal.
+
+Ce module gere:
+- la presentation du menu et de ses boutons,
+- la selection du mode de jeu,
+- la saisie du pseudo joueur,
+- la transition vers la partie.
+"""
+
+
 class Lobby:
-    """Menu d'accueil du jeu Gravity Runner."""
+    """Controle l'etat et le rendu du menu d'accueil Gravity Runner."""
 
     def __init__(self, screen, game):
+        # Etats de navigation du menu.
         self.inMenu = True
         self.changingName = False
         self.inLeaderboard = False
@@ -14,16 +25,19 @@ class Lobby:
         self.showError = False
         self.selected_mode = "solo"
 
+        # Polices dediees au menu.
         self.font_title = pygame.font.Font(None, 85)
         self.font_medium = pygame.font.Font(None, 50)
         self.font_small = pygame.font.Font(None, 32)
         self.font_tiny = pygame.font.Font(None, 24)
 
+        # Ressources visuelles et petites animations du menu.
         self.menu_bg = self._load_menu_background(screen)
         self.menu_bg_scroll = 0.0
         self.cursor_timer = 0
 
     def _load_menu_background(self, screen):
+        """Charge l'image de fond du menu, avec fallback unicolore si absente."""
         bg_path = os.path.join("assets", "Images", "BackGround.png")
         try:
             image = pygame.image.load(bg_path).convert()
@@ -34,6 +48,7 @@ class Lobby:
             return fallback
 
     def _draw_menu_background(self, screen):
+        """Dessine le fond du menu avec scroll horizontal et voile sombre."""
         if self.menu_bg.get_size() != (screen.get_width(), screen.get_height()):
             self.menu_bg = pygame.transform.scale(self.menu_bg, (screen.get_width(), screen.get_height()))
 
@@ -55,6 +70,7 @@ class Lobby:
             self._draw_leaderboard(screen, events)
 
     def _draw_main_menu(self, screen, events):
+        """Rend l'interface principale du lobby et traite les interactions."""
         self._draw_menu_background(screen)
         mx, my = pygame.mouse.get_pos()
 
@@ -138,6 +154,7 @@ class Lobby:
         hint_mode = self.font_tiny.render("Fleches Gauche/Droite: changer le mode", True, (130, 145, 170))
         screen.blit(hint_mode, hint_mode.get_rect(center=(screen.get_width() // 2, panel_rect.bottom - 5)))
 
+        # Navigation clavier/souris pour modifier l'etat courant du lobby.
         modes_list = ["campaign", "solo", "duo"]
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -169,6 +186,7 @@ class Lobby:
                     sys.exit()
 
     def _draw_name_input(self, screen, events):
+        """Affiche la modale de saisie pseudo et valide l'entree utilisateur."""
         self._draw_menu_background(screen)
 
         overlay = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)

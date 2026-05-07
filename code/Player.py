@@ -69,6 +69,7 @@ class Player:
         self.max_trail_points = 10
 
     def getName(self):
+        """Lit le dernier pseudo sauvegarde pour initialiser le joueur."""
         data = 0
         if not os.path.exists("scores.json"):
             data = {"global_best": 0, "personal_bests": {}}
@@ -103,6 +104,7 @@ class Player:
         self.anim_index = 0
 
     def die(self):
+        """Hook de mort du joueur, conserve pour compatibilite future."""
         print('Player died')
 
     def spawn(self, x=None, y=None):

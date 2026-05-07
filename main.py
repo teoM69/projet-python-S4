@@ -262,12 +262,16 @@ while running:
                 else:
                     switch_request_until[1] = now + SWITCH_INPUT_BUFFER_MS
 
+        # Le decor est rendu avant les entites pour servir de couche de fond.
         game.world.drawBackGround(screen)
         game.world.drawWalls(screen)
 
         living_players = [player for player in players if player.alive]
+        # Bloc principal de simulation: execute seulement pendant une run active.
         if game_state == STATE_PLAYING and not paused and living_players:
             elapsed_s = (now - run_start_time) / 1000.0
+
+            # Courbe de progression de vitesse: demarrage souple, acceleration progressive.
             ramp_ratio = min(1.0, elapsed_s / max(0.001, GAME_SPEED_RAMP_DURATION_SEC))
             speed_curve = ramp_ratio ** GAME_SPEED_RAMP_EXPONENT
 
@@ -278,8 +282,11 @@ while running:
                 sp_start = GAME_SPEED_START
                 sp_max = GAME_SPEED_MAX
 
+            # Note: la vitesse courante reste pilotee ailleurs via game.gameSpeed.
+            # Cette formule est gardee comme reference de courbe cible.
             sp_start + ((sp_max - sp_start) * speed_curve)
 
+            # Meme principe pour la gravite: plus la run dure, plus la chute est exigeante.
             gravity_ratio = min(1.0, elapsed_s / max(0.001, PLAYER_GRAVITY_RAMP_DURATION_SEC))
             gravity_curve = gravity_ratio ** PLAYER_GRAVITY_RAMP_EXPONENT
             gravity_speed = PLAYER_GRAVITY_SPEED + ((PLAYER_GRAVITY_MAX - PLAYER_GRAVITY_SPEED) * gravity_curve)
@@ -291,6 +298,7 @@ while running:
                 min(1.0, (game.gameSpeed - GAME_SPEED_START) / max(0.001, (GAME_SPEED_MAX - GAME_SPEED_START))),
             )
 
+            # Spawn d'obstacle cadence par un intervalle aleatoire pour casser la monotonie.
             if now - last_spawn >= spawn_interval:
                 speed = game.gameSpeed * random.uniform(OBSTACLE_SPEED_MULT_MIN, OBSTACLE_SPEED_MULT_MAX)
                 spawned = ob_gen.generate_obstacle(
@@ -305,12 +313,14 @@ while running:
                     last_spawn = now
                     spawn_interval = random.randint(OBSTACLE_SPAWN_MIN_MS, OBSTACLE_SPAWN_MAX_MS)
 
+            # Score = temps de survie + bonus de vitesse.
             elapsed_s = (now - run_start_time) / 1000.0
             objective_manager.update_elapsed(elapsed_s)
 
             passed_obstacles = ob_gen.update(game.gameSpeed * frame_scale)
             objective_manager.register_obstacles_passed(passed_obstacles)
 
+            # Resolution joueur par joueur: switch, mouvement, collisions.
             for index, player in enumerate(players):
                 if not player.alive:
                     continue
@@ -334,6 +344,7 @@ while running:
                 ):
                     player.alive = False
 
+                # Collision: applique l'effet obstacle + feedback son/visuel, puis retire l'obstacle.
                 for ob in ob_gen.list_obstacles()[:]:
                     if player.rect.colliderect(ob.rect):
                         visual_fx.spawn_for_obstacle(ob.type, ob.rect.center)
@@ -351,6 +362,7 @@ while running:
             speed_bonus = max(0.0, game.gameSpeed - GAME_SPEED_START) * SCORE_SPEED_BONUS_FACTOR
             game.score = int((elapsed_s * SCORE_BASE_PER_SEC) + (elapsed_s * speed_bonus) + game.objective_bonus)
 
+            # Condition de fin de run: tous les joueurs elimines.
             if not any(player.alive for player in players):
                 reward = objective_manager.consume_reward()
                 if reward:
@@ -365,6 +377,7 @@ while running:
                     death_time_ms = now
                 game_state = STATE_GAME_OVER
 
+            # En campagne, un niveau est valide quand le score cible est atteint.
             elif lobby.selected_mode == "campaign":
                 if game.score >= campaign.current_level.target_score:
                     campaign.add_level_score(game.score)
@@ -378,7 +391,8 @@ while running:
         for player in players:
             player.draw(screen)
 
-        interface.show_score(game.score, game.bestScore)#jai aussi modifier ca 
+        # HUD permanent: score courant + meilleur score.
+        interface.show_score(game.score, game.bestScore)
         interface.show_objective(objective_manager.current)
 
         if game_state == STATE_TUTORIAL:
@@ -400,6 +414,7 @@ while running:
                 game_state = STATE_MENU
 
         elif game_state == STATE_LEVEL_WON:
+            # Ecran de transition entre deux niveaux de campagne.
             overlay = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
             overlay.fill((0, 22, 12, 185))
             screen.blit(overlay, (0, 0))
@@ -415,6 +430,7 @@ while running:
             screen.blit(c_hint, c_hint.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2 + 56)))
 
         elif game_state == STATE_CAMPAIGN_COMPLETE:
+            # Ecran de fin complete de campagne avec score cumule.
             overlay = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
             overlay.fill((6, 12, 34, 200))
             screen.blit(overlay, (0, 0))
