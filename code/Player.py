@@ -60,7 +60,7 @@ class Player:
         self.walk_normal = [safe_load('mov1_1.img.png.png'), safe_load('mov2_1.img.png.png'), safe_load('mov1_1.img.png.png')]
         self.walk_inverted = [safe_load('mov1_-1.img.png.png'), safe_load('mov2_-1.img.png.png'), safe_load('mov1_-1.img.png.png')]
         self.flip_imgs = [safe_load('flip1.img.png.png'), safe_load('flip2.img.png.png')]
-        self.dead_image = safe_load('dead.img.png.png')
+        self.dead_image = safe_load('dead.img.png')
 
         #colorer
         self.walk_normal = [self.colorize(img, playerColor) for img in self.walk_normal]
