@@ -140,18 +140,19 @@ class Interface:
         """Affiche la mission secondaire courante dans un petit panneau."""
         if objective is None:
             return
-
-        panel_w = min(470, max(300, self.screen.get_width() // 2))
-        panel_h = 165
-        panel = pygame.Rect(18, 86, panel_w, panel_h)
+        # Panneau déplacé vers le haut et élargi pour éviter que le texte dépasse
+        panel_w = min(520, max(320, self.screen.get_width() // 2))
+        panel_h = 140
+        panel = pygame.Rect(12, 18, panel_w, panel_h)
 
         panel_surf = pygame.Surface((panel.width, panel.height), pygame.SRCALPHA)
-        panel_surf.fill((12, 18, 36, 210))
-        pygame.draw.rect(panel_surf, (255, 200, 0, 100), panel_surf.get_rect(), width=2, border_radius=14)
+        panel_surf.fill((12, 18, 36, 220))
+        pygame.draw.rect(panel_surf, (255, 200, 0, 120), panel_surf.get_rect(), width=2, border_radius=12)
         self.screen.blit(panel_surf, panel.topleft)
 
+        # Titres et textes avec positions ajustées
         title = self.font_tiny.render("MISSION SECONDAIRE", True, (255, 200, 0))
-        self.screen.blit(title, (panel.left + 14, panel.top + 10))
+        self.screen.blit(title, (panel.left + 12, panel.top + 8))
 
         mission_color = (245, 245, 245)
         if objective.completed:
@@ -160,17 +161,18 @@ class Interface:
             mission_color = (255, 120, 120)
 
         mission = self.font_small.render(objective.title, True, mission_color)
-        self.screen.blit(mission, (panel.left + 14, panel.top + 30))
+        self.screen.blit(mission, (panel.left + 12, panel.top + 34))
 
+        # Description et progression un peu plus espacés pour lisibilité
         desc = self.font_tiny.render(objective.description, True, (190, 200, 215))
-        self.screen.blit(desc, (panel.left + 14, panel.top + 66))
+        self.screen.blit(desc, (panel.left + 12, panel.top + 62))
 
         progress = self.font_tiny.render(f"Progression: {objective.progress_label()}", True, (225, 225, 225))
-        self.screen.blit(progress, (panel.left + 14, panel.top + 96))
+        self.screen.blit(progress, (panel.left + 12, panel.top + 92))
 
         reward_color = (148, 243, 170) if objective.completed else (255, 215, 0)
         status = self.font_tiny.render(f"{objective.status_label()} +{objective.reward} pts", True, reward_color)
-        self.screen.blit(status, (panel.left + 14, panel.top + 120))
+        self.screen.blit(status, (panel.left + 12, panel.top + 112))
 
     def show_tutorial(self, selected_mode):
         """Affiche un tutoriel rapide avant le debut de la partie."""
