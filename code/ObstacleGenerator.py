@@ -54,7 +54,7 @@ class ObstacleGenerator:
 
     def _choose_obstacle_type(self):
         """Tire un type d'obstacle selon une loi ponderee."""
-        # Les bombes sont plus frequentes que les obstacles de poussée.
+        # Les bombes sont plus frequentes que les obstacles de poussée pour maintenir la pression.
         return random.choices(
             OBSTACLE_TYPES,
             weights=OBSTACLE_TYPE_WEIGHTS,
@@ -69,6 +69,7 @@ class ObstacleGenerator:
         ensure_images_loaded()
 
         if obstacleType is None:
+            # Sans type impose, le generateur choisit automatiquement un obstacle.
             obstacleType = self._choose_obstacle_type()
 
         x = self._spawn_x()
@@ -77,8 +78,10 @@ class ObstacleGenerator:
 
         supported_lanes = []
         if world is not None:
+            # Quand le monde procedurale est actif, on s'appuie sur ses segments valides.
             supported_lanes = world.get_spawn_targets(min_right_edge=self.screen_width + OBSTACLE_WORLD_MIN_RIGHT_EDGE)
         else:
+            # Sinon, on retombe sur les positions de base de l'ecran.
             supported_lanes = [
                 ("top", 0, self.screen_width, top_lane_y if top_lane_y is not None else WALL_HEIGHT),
                 (
@@ -98,6 +101,7 @@ class ObstacleGenerator:
             return False
 
         if lane is None:
+            # Si aucune lane n'est imposee, on en choisit une valide au hasard.
             lane, lane_left, lane_right, lane_y = random.choice(supported_lanes)
         else:
             lane_left, lane_right, lane_y = supported_lanes[0][1], supported_lanes[0][2], supported_lanes[0][3]

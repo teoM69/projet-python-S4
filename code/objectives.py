@@ -138,6 +138,7 @@ class ObjectiveManager:
 
     def start_run(self):
         """Selectionne aleatoirement une mission et l'active pour la run."""
+        # On clone le template pour garder une copie propre d'une partie a l'autre.
         self.current = self._clone(random.choice(self.templates))
         return self.current
 
@@ -145,16 +146,19 @@ class ObjectiveManager:
         """Relaye la progression temporelle a la mission active."""
         if self.current is None:
             return
+        # Les missions de survie avancent automatiquement avec le temps passe en jeu.
         self.current.update_elapsed(elapsed_seconds)
 
     def register_obstacles_passed(self, count):
         """Relaye le nombre d'obstacles evites a la mission active."""
         if self.current is None:
             return
+        # Les obstacles supprimes sans collision comptent pour les objectifs d'esquive.
         self.current.register_obstacles_passed(count)
 
     def consume_reward(self):
         """Recupere la recompense de mission si elle est disponible."""
         if self.current is None:
             return 0
+        # La recompense n'est distribuee qu'une seule fois.
         return self.current.consume_reward()

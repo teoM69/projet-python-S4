@@ -123,7 +123,7 @@ class Obstacle:
             base_color = (220, 220, 220)
             trail_color = (220, 220, 220)
 
-        # Trainee lumineuse discrète pour mieux lire le mouvement.
+        # La trainee aide a voir la trajectoire et la vitesse de l'obstacle.
         trail_len = len(self.trail)
         if trail_len > 1:
             for idx, point in enumerate(self.trail):
@@ -144,14 +144,14 @@ class Obstacle:
 
         surface.blit(self.image, self.rect)
 
-        # Halo pulse pour rendre la lecture de danger plus immediate.
+        # Le halo pulse rend l'obstacle plus visible et attire l'attention du joueur.
         pulse = 0.5 + (0.5 * math.sin((pygame.time.get_ticks() * 0.012) + (self.rect.x * 0.04)))
         glow_alpha = int(55 + (85 * pulse))
         glow = pygame.Surface((self.rect.width + 20, self.rect.height + 20), pygame.SRCALPHA)
         pygame.draw.ellipse(glow, (base_color[0], base_color[1], base_color[2], glow_alpha), glow.get_rect(), width=3)
         surface.blit(glow, (self.rect.x - 10, self.rect.y - 10))
 
-        # Petit flash d'apparition pour eviter l'effet "pop" sec.
+        # Le flash d'apparition evite un spawn trop brusque a l'ecran.
         if age_ms < 240:
             progress = age_ms / 240.0
             ring_w = int(self.rect.width + 10 + (36 * progress))
@@ -164,7 +164,7 @@ class Obstacle:
     def apply_effect(self, player):
         """Applique l'effet gameplay de l'obstacle sur le joueur touche."""
         t = (self.type or '').lower()
-        # bombe => degats
+        # Une bombe elimine directement le joueur.
         if 'bomb' in t:
             if hasattr(player, 'take_damage'):
                 try:
@@ -176,7 +176,7 @@ class Obstacle:
                     player.alive = False
                 except Exception:
                     pass
-        # poussoir => inverse la gravite si possible
+        # Un obstacle de poussée inverse la gravite si l'API du joueur le permet.
         if 'push' in t:
             if hasattr(player, 'switchGravity'):
                 try:

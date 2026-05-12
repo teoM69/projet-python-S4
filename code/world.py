@@ -225,6 +225,7 @@ class World:
 
     def reset_structures(self):
         """Reinitialise les structures defilantes pour un nouveau run."""
+        # Ces valeurs debordent volontairement de l'ecran pour eviter un vide au lancement.
         self.top_structures = [{"x": -120, "w": self.screen_width + 280, "h": self.wallHeight}]
         self.bottom_structures = [{"x": -120, "w": self.screen_width + 280, "h": self.wallHeight}]
         self.middle_structures = []
@@ -284,9 +285,10 @@ class World:
         width = self._rng.randint(min_width, max_width)
         thickness = self._rng.randint(min_height, max_height)
 
+        # Chaque nouveau segment s'accroche apres le precedent avec un ecart variable.
         x = next_x + gap
         if lane == "middle":
-            # Garde des plateformes centrales presentes en plus grande quantite, mais evite de saturer le couloir.
+            # Les plateformes du milieu restent plus rares pour garder un vrai interet de gravite.
             if self._rng.random() < (0.20 + (0.15 * d)):
                 self._next_middle_x = x + self._rng.randint(140, 300)
                 return
@@ -306,6 +308,7 @@ class World:
     def update_structures(self, speed, difficulty_ratio=0.0):
         """Fait defiler les structures, en retire, puis regenere ce qui manque."""
         self.difficulty_ratio = max(0.0, min(1.0, difficulty_ratio))
+        # Le decor avance vers la gauche comme dans un runner infini.
         self._update_ambient(speed)
         self._next_top_x -= speed
         self._next_bottom_x -= speed
@@ -364,6 +367,7 @@ class World:
         if min_right_edge is None:
             min_right_edge = self.screen_width + 180
 
+        # On ne retourne que les segments assez loin a droite pour eviter un spawn trop proche du joueur.
         for seg in self.top_structures:
             if seg["x"] + seg["w"] >= min_right_edge:
                 targets.append(("top", seg["x"], seg["x"] + seg["w"], self.roof_y))

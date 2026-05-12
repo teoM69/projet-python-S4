@@ -301,6 +301,7 @@ while running:
 
             # Spawn d'obstacle cadence par un intervalle aleatoire pour casser la monotonie.
             if now - last_spawn >= spawn_interval:
+                # La vitesse varie legerement pour que les spawns paraissent plus naturels.
                 speed = game.gameSpeed * random.uniform(OBSTACLE_SPEED_MULT_MIN, OBSTACLE_SPEED_MULT_MAX)
                 spawned = ob_gen.generate_obstacle(
                     None,
@@ -318,6 +319,7 @@ while running:
             elapsed_s = (now - run_start_time) / 1000.0
             objective_manager.update_elapsed(elapsed_s)
 
+            # On compte aussi les obstacles passes pour les missions secondaires.
             passed_obstacles = ob_gen.update(game.gameSpeed * frame_scale)
             objective_manager.register_obstacles_passed(passed_obstacles)
 
@@ -330,6 +332,7 @@ while running:
                 floor_y = game.world.find_floor_y(player.rect.centerx, support_span, player.rect.top)
                 ceiling_y = game.world.find_ceiling_y(player.rect.centerx, support_span, player.rect.bottom)
 
+                # Le switch ne marche que si le joueur touche une surface jouable.
                 if switch_request_until[index] >= now and can_switch_on_surface(player, floor_y, ceiling_y):
                     player.switchGravity()
                     sound.playGravitySwitchSound()
