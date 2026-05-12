@@ -17,7 +17,7 @@ class Player:
     """Classe Joueur unifiee: fournit l'API attendue par les obstacles
     et prend aussi en charge des animations de sprite simples si les images existent.
     """
-    def __init__(self, x, y):
+    def __init__(self, x, y, color):
         self.nom = self.getName()
         # Gravite : direction et vitesse.
         self.gravity_direction = 1  # 1 = normal, -1 = inverted
@@ -31,7 +31,7 @@ class Player:
         self.rect = pygame.Rect(int(x), int(y), self.width, self.height)
         self.alive = True
 
-        playerColor = (255, 100, 100)
+        self.color = color
         # Chargement securise des images d'animation.
         # Si un asset manque, une surface de secours est creee.
         anim_dir = os.path.join('assets', 'Images', 'mov_animation', 'mov_white_animation')
@@ -63,10 +63,7 @@ class Player:
         self.dead_image = safe_load('dead.img.png')
 
         #colorer
-        self.walk_normal = [self.colorize(img, playerColor) for img in self.walk_normal]
-        self.walk_inverted = [self.colorize(img, playerColor) for img in self.walk_inverted]
-        self.flip_imgs = [self.colorize(img, playerColor) for img in self.flip_imgs]
-        self.dead_image = self.colorize(self.dead_image, playerColor)
+        self.colorAssets(self.color)
 
         self.current_image = self.walk_normal[0]
         self.anim_index = 0
@@ -201,3 +198,9 @@ class Player:
         coloured_surface = surface.copy()
         coloured_surface.fill(color, special_flags=pygame.BLEND_RGBA_MULT)
         return coloured_surface
+    
+    def colorAssets(self, color):
+        self.walk_normal = [self.colorize(img, color) for img in self.walk_normal]
+        self.walk_inverted = [self.colorize(img, color) for img in self.walk_inverted]
+        self.flip_imgs = [self.colorize(img, color) for img in self.flip_imgs]
+        self.dead_image = self.colorize(self.dead_image, color)
