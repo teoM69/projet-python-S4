@@ -3,5 +3,19 @@
     "personal_bests": {
         "Teo": 362
     },
-    "last_name": "Teo"
+    "last_name": "Teo",
+    "last_colors": [
+        {
+            "r": 255,
+            "g": 0,
+            "b": 255,
+            "commentaire": "joueur 1"
+        },
+        {
+            "r": 255,
+            "g": 0,
+            "b": 0,
+            "commentaire": "joueur 2"
+        }
+    ]
 }

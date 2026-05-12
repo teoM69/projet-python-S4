@@ -25,6 +25,7 @@ class Game:
         self.bestScore = 0
         self.personalBest = 0
         self.top3 = []
+        self.lastColors = []
         self.contactObstacleType = ""
 
         # Monde de jeu (plateformes et ambiance).
@@ -90,8 +91,15 @@ class Game:
        self.bestScore = self.getBestScore(data)
        self.personalBest = self.getPersonalbest(data)
        self.top3 = self.getBestScores(data)
+       self.lastColors = self.get_colors(data)
 
     def set_screen(self, screen):
         """Met a jour la surface principale et reajuste le monde."""
         self.screen = screen
         self.world.set_screen_size(screen.get_width(), screen.get_height())
+
+    def get_colors(self, data):
+        colorOne = data["last_colors"][0]
+        colorTwo = data["last_colors"][1]
+        colors = [(colorOne["r"],colorOne["g"],colorOne["b"]),(colorTwo["r"],colorTwo["g"],colorTwo["b"])]
+        return colors

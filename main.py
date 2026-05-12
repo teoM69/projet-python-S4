@@ -67,13 +67,13 @@ def can_switch_on_surface(player, floor_y, ceiling_y, tolerance=SWITCH_SURFACE_T
     return on_floor or on_ceiling
 
 
-def build_players(mode, screen_height):
+def build_players(mode, screen_height, colors):
     """Construit la liste des joueurs actifs selon le mode selectionne."""
     spawn_y = screen_height - 50 - 165 - 55
-    players = [Player(PLAYER_RESPAWN_X, spawn_y, (0,0,255))]
+    players = [Player(PLAYER_RESPAWN_X, spawn_y, colors[0])]
     lobby.name = players[0].nom
     if mode == "duo":
-        players.append(Player(PLAYER_RESPAWN_X + 80, spawn_y, (255,0,0)))
+        players.append(Player(PLAYER_RESPAWN_X + 80, spawn_y, colors[1]))
     return players
 
 
@@ -128,7 +128,8 @@ objective_manager = ObjectiveManager()
 sound.playBackgroundMusic()
 
 # Joueurs actifs: un seul en solo, deux en duo.
-players = build_players(lobby.selected_mode, screen.get_height())
+game.setScores()
+players = build_players(lobby.selected_mode, screen.get_height(), game.lastColors)
 # Systeme de generation et de gestion des obstacles en flux continu.
 ob_gen = ObstacleGenerator(screen.get_width(), screen.get_height())
 last_spawn = pygame.time.get_ticks()
@@ -202,7 +203,7 @@ while running:
     if game_state == STATE_MENU:
         lobby.run(screen, events)
         if not lobby.inMenu:
-            players = build_players(lobby.selected_mode, screen.get_height())
+            players = build_players(lobby.selected_mode, screen.get_height(), game.lastColors)
             switch_request_until = [0 for _ in players]
             paused = False
             death_time_ms = None
