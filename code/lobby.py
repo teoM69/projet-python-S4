@@ -74,7 +74,8 @@ class Lobby:
         self._draw_menu_background(screen)
         mx, my = pygame.mouse.get_pos()
 
-        panel_w, panel_h = 800, 480
+        panel_w = min(900, screen.get_width() - 100)
+        panel_h = max(520, int(screen.get_height() * 0.80))
         panel_rect = pygame.Rect((screen.get_width() - panel_w) // 2, (screen.get_height() - panel_h) // 2, panel_w, panel_h)
 
         pygame.draw.rect(screen, (8, 12, 24, 240), panel_rect, border_radius=20)
@@ -82,11 +83,11 @@ class Lobby:
 
         # --- TITRE ---
         title_surf = self.font_title.render("GRAVITY RUNNER", True, (248, 250, 255))
-        title_rect = title_surf.get_rect(center=(screen.get_width() // 2, panel_rect.top + 60))
+        title_rect = title_surf.get_rect(center=(panel_rect.centerx, panel_rect.top + 60))
         screen.blit(title_surf, title_rect)
 
         subtitle = self.font_small.render("Pret pour le defi ?", True, (148, 243, 170))
-        screen.blit(subtitle, subtitle.get_rect(center=(screen.get_width() // 2, panel_rect.top + 110)))
+        screen.blit(subtitle, subtitle.get_rect(center=(panel_rect.centerx, panel_rect.top + 110)))
 
         # --- SECTION JOUEUR ---
         name_tag = self.font_tiny.render("PROFIL JOUEUR", True, (155, 172, 196))
@@ -118,9 +119,15 @@ class Lobby:
         mode_title = self.font_small.render("SELECTION DU MODE", True, (180, 190, 210))
         screen.blit(mode_title, (panel_rect.left + 50, panel_rect.top + 280))
 
-        campagne_rect = pygame.Rect(panel_rect.left + 50, panel_rect.top + 310, 220, 60)
-        solo_rect = pygame.Rect(panel_rect.left + 290, panel_rect.top + 310, 220, 60)
-        duo_rect = pygame.Rect(panel_rect.left + 530, panel_rect.top + 310, 220, 60)
+        # Center the three mode buttons horizontally inside the panel
+        btn_w, btn_h = 220, 60
+        gap = 20
+        total_w = (3 * btn_w) + (2 * gap)
+        start_x = panel_rect.left + (panel_rect.width - total_w) // 2
+
+        campagne_rect = pygame.Rect(start_x, panel_rect.top + 310, btn_w, btn_h)
+        solo_rect = pygame.Rect(start_x + (btn_w + gap), panel_rect.top + 310, btn_w, btn_h)
+        duo_rect = pygame.Rect(start_x + 2 * (btn_w + gap), panel_rect.top + 310, btn_w, btn_h)
 
         modes_info = (
             (campagne_rect, "campaign", "CAMPAGNE"),
@@ -143,16 +150,16 @@ class Lobby:
         # --- BAS DU PANNEAU (AIDE & START) ---
         help_text = "Controles: Espace (J1) | Haut ou Clic (J2)"
         help_surf = self.font_tiny.render(help_text, True, (150, 160, 180))
-        screen.blit(help_surf, help_surf.get_rect(center=(screen.get_width() // 2, panel_rect.bottom - 90)))
+        screen.blit(help_surf, help_surf.get_rect(center=(panel_rect.centerx, panel_rect.bottom - 140)))
 
         hint_play = self.font_small.render("Appuyez sur ENTREE pour demarrer", True, (200, 200, 200))
-        screen.blit(hint_play, hint_play.get_rect(center=(screen.get_width() // 2, panel_rect.bottom - 50)))
+        screen.blit(hint_play, hint_play.get_rect(center=(panel_rect.centerx, panel_rect.bottom - 100)))
 
         hint_exit = self.font_tiny.render("ECHAP pour quitter", True, (100, 110, 130))
-        screen.blit(hint_exit, hint_exit.get_rect(center=(screen.get_width() // 2, panel_rect.bottom - 20)))
+        screen.blit(hint_exit, hint_exit.get_rect(center=(panel_rect.centerx, panel_rect.bottom - 70)))
 
         hint_mode = self.font_tiny.render("Fleches Gauche/Droite: changer le mode", True, (130, 145, 170))
-        screen.blit(hint_mode, hint_mode.get_rect(center=(screen.get_width() // 2, panel_rect.bottom - 5)))
+        screen.blit(hint_mode, hint_mode.get_rect(center=(panel_rect.centerx, panel_rect.bottom - 40)))
 
         # Navigation clavier/souris pour modifier l'etat courant du lobby.
         modes_list = ["campaign", "solo", "duo"]
@@ -230,14 +237,15 @@ class Lobby:
         overlay = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 200))
         screen.blit(overlay, (0, 0))
-        panel_w, panel_h = 800, 480
+        panel_w = min(900, screen.get_width() - 100)
+        panel_h = max(520, int(screen.get_height() * 0.75))
         panel_rect = pygame.Rect((screen.get_width() - panel_w) // 2, (screen.get_height() - panel_h) // 2, panel_w, panel_h)
 
         pygame.draw.rect(screen, (8, 12, 24, 240), panel_rect, border_radius=20)
         pygame.draw.rect(screen, (96, 144, 230), panel_rect, width=2, border_radius=20)
 
         title_surf = self.font_title.render("MEILLEURS SCORES", True, (248, 250, 255))
-        title_rect = title_surf.get_rect(center=(screen.get_width() // 2, panel_rect.top + 60))
+        title_rect = title_surf.get_rect(center=(panel_rect.centerx, panel_rect.top + 60))
         screen.blit(title_surf, title_rect)
 
         start_y = title_rect.bottom + 50
@@ -250,13 +258,13 @@ class Lobby:
                 text = f"{i + 1}. {name} {'.' * (20 - len(name))} {score}"
                 score_surf = self.font_small.render(text, True, (248, 250, 255))
                 
-                score_rect = score_surf.get_rect(center=(screen.get_width() // 2, start_y + (i * line_spacing)))
+                score_rect = score_surf.get_rect(center=(panel_rect.centerx, start_y + (i * line_spacing)))
                 screen.blit(score_surf, score_rect)
         else:
                 text = "Aucun score enregistré pour le moment"
                 score_surf = self.font_small.render(text, True, (248, 250, 255))
                 
-                score_rect = score_surf.get_rect(center=(screen.get_width() // 2, start_y))
+                score_rect = score_surf.get_rect(center=(panel_rect.centerx, start_y))
                 screen.blit(score_surf, score_rect)
 
         btn_width = 130
