@@ -1,12 +1,10 @@
 {
-    "global_best": 362,
-    "personal_bests": {
-        "Teo": 362
-    },
-    "last_name": "Teo",
+    "global_best": 0,
+    "personal_bests": {},
+    "last_name": "Joueur 1",
     "last_colors": [
         {
-            "r": 255,
+            "r": 0,
             "g": 0,
             "b": 255,
             "commentaire": "joueur 1"
@@ -17,5 +15,8 @@
             "b": 0,
             "commentaire": "joueur 2"
         }
+    ],
+    "owned_colors": [
+        {}
     ]
 }
