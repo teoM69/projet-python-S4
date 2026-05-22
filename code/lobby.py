@@ -1,6 +1,7 @@
 import os
 import pygame
 import sys
+from code.Player import Player
 
 """Ecran de lobby / menu principal.
 
@@ -20,6 +21,7 @@ class Lobby:
         self.inMenu = True
         self.changingName = False
         self.inLeaderboard = False
+        self.inSkinMenu = False
         self.name = "Joueur 1"
         self.game = game
         self.showError = False
@@ -62,12 +64,14 @@ class Lobby:
         screen.blit(shade, (0, 0))
 
     def run(self, screen, events):
-        if not self.changingName and not self.inLeaderboard:
+        if not self.changingName and not self.inLeaderboard and not self.inSkinMenu:
             self._draw_main_menu(screen, events)
         elif self.changingName:
             self._draw_name_input(screen, events)
-        else:
+        elif self.inLeaderboard:
             self._draw_leaderboard(screen, events)
+        else:
+            self._draw_skin_menu(screen, events)
 
     def _draw_main_menu(self, screen, events):
         """Rend l'interface principale du lobby et traite les interactions."""
@@ -96,12 +100,24 @@ class Lobby:
         name_pos = (panel_rect.left + 50, panel_rect.top + 185)
         screen.blit(name_label, name_pos)
 
-        btn_edit_rect = pygame.Rect(panel_rect.right - 180, panel_rect.top + 180, 130, 40)
+        btn_edit_rect = pygame.Rect(panel_rect.right - 530, panel_rect.top + 180, 130, 40)
         is_hover_edit = btn_edit_rect.collidepoint(mx, my)
         color_btn = (42, 126, 234) if is_hover_edit else (22, 101, 206)
         pygame.draw.rect(screen, color_btn, btn_edit_rect, border_radius=8)
         edit_txt = self.font_tiny.render("MODIFIER", True, (255, 255, 255))
         screen.blit(edit_txt, edit_txt.get_rect(center=btn_edit_rect.center))
+
+        skin_label = self.font_medium.render("Skin", True, (255, 255, 255))
+        skin_pos = (panel_rect.left + 500, panel_rect.top + 185)
+        screen.blit(skin_label, skin_pos)
+
+        btn_skin_rect = pygame.Rect(panel_rect.right - 200, panel_rect.top + 180, 130, 40)
+        is_hover_skin = btn_skin_rect.collidepoint(mx, my)
+        color_btn = (42, 126, 234) if is_hover_skin else (22, 101, 206)
+        pygame.draw.rect(screen, color_btn, btn_skin_rect, border_radius=8)
+        change_skin_txt = self.font_tiny.render("MODIFIER", True, (255, 255, 255))
+        screen.blit(change_skin_txt, change_skin_txt.get_rect(center=btn_skin_rect.center))
+
 
         #--- SECTION LEADERBOARD ---
         leaderboard_title = self.font_tiny.render("MEILLEURS SCORES", True, (155, 172, 196))
@@ -168,6 +184,8 @@ class Lobby:
                     self.selected_mode = "solo"
                 elif duo_rect.collidepoint(event.pos):
                     self.selected_mode = "duo"
+                elif btn_skin_rect.collidepoint(event.pos):
+                    self.inSkinMenu = True
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
@@ -272,3 +290,21 @@ class Lobby:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if btn_back_rect.collidepoint(event.pos):
                     self.inLeaderboard = False
+
+    def _draw_skin_menu(self, screen, events):
+        self._draw_menu_background(screen)
+        mx, my = pygame.mouse.get_pos()
+        overlay = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 200))
+        screen.blit(overlay, (0, 0))
+        panel_w, panel_h = 800, 480
+        panel_rect = pygame.Rect((screen.get_width() - panel_w) // 2, (screen.get_height() - panel_h) // 2, panel_w, panel_h)
+
+        pygame.draw.rect(screen, (8, 12, 24, 240), panel_rect, border_radius=20)
+        pygame.draw.rect(screen, (96, 144, 230), panel_rect, width=2, border_radius=20)
+
+        title_surf = self.font_title.render("SKINS", True, (248, 250, 255))
+        title_rect = title_surf.get_rect(center=(screen.get_width() // 2, panel_rect.top + 60))
+        screen.blit(title_surf, title_rect)
+        show_player = Player(200,200,(255,255,0))
+        show_player.draw(screen)
