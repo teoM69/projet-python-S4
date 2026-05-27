@@ -306,5 +306,7 @@ class Lobby:
         title_surf = self.font_title.render("SKINS", True, (248, 250, 255))
         title_rect = title_surf.get_rect(center=(screen.get_width() // 2, panel_rect.top + 60))
         screen.blit(title_surf, title_rect)
-        show_player = Player(200,200,(255,255,0))
+        #for i in range(len(self.game.ownedColors)):
+        ecart_x = 200 + (1 * 60) 
+        show_player = Player(ecart_x, 200, (255, 255, 0))
         show_player.draw(screen)
