@@ -38,6 +38,9 @@ class Lobby:
         self.menu_bg_scroll = 0.0
         self.cursor_timer = 0
 
+        self.skin_cursor_x = 0
+        self.skin_cursor_y = 0
+
     def _load_menu_background(self, screen):
         """Charge l'image de fond du menu, avec fallback unicolore si absente."""
         bg_path = os.path.join("assets", "Images", "BackGround.png")
@@ -308,15 +311,19 @@ class Lobby:
         screen.blit(title_surf, title_rect)
         skin_rects = [] #liste de rects pour detecter un clic sur un skin
         for i in range(len(self.game.ownedColors)):
-            ecart_x = (i%5 * 110) 
+            ecart_x = (i%5 * 110)
             if i < 5: ecart_y = 0
             else: ecart_y = 100
             x=150 + panel_rect.left + ecart_x
             y=200 + panel_rect.top + ecart_y
+            #A MODIFIER!!!!!!!!!
+            if self.game.lastColors[0] == self.game.ownedColors[i]:
+                self.skin_cursor_x = x
+                self.skin_cursor_y = y
             show_player = Player(x, y, self.game.ownedColors[i])
             show_player.draw(screen)
-            player_rect = pygame.Rect(x, y, 50, 50)
-            skin_rects.append((player_rect, self.game.ownedColors[i]))
+            skin_rect = pygame.Rect(x, y, 50, 50)
+            skin_rects.append((skin_rect, self.game.ownedColors[i], x, y)) #stockage des positions pour afficher curseur de selection
         btn_width = 130
         btn_back_rect = pygame.Rect(0, panel_rect.top + 430, btn_width, 40)
         btn_back_rect.centerx = panel_rect.centerx
@@ -325,12 +332,15 @@ class Lobby:
         pygame.draw.rect(screen, color_btn, btn_back_rect, border_radius=8)
         btn_txt = self.font_tiny.render("RETOUR", True, (255, 255, 255))
         screen.blit(btn_txt, btn_txt.get_rect(center=btn_back_rect.center))
-        
+        cursor_rect = pygame.Rect(self.skin_cursor_x, self.skin_cursor_y, 50, 50)
+        pygame.draw.rect(screen, (0,0,255), cursor_rect, border_radius=20)
 
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                for player_rect, color in skin_rects:
-                    if player_rect.collidepoint(event.pos):
+                for skin_rect, color, x, y in skin_rects:
+                    if skin_rect.collidepoint(event.pos):
                         print(color)
+                        self.skin_cursor_x = x
+                        self.skin_cursor_y = y
                 if btn_back_rect.collidepoint(event.pos):
                     self.inSkinMenu = False
