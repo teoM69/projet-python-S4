@@ -317,9 +317,20 @@ class Lobby:
             show_player.draw(screen)
             player_rect = pygame.Rect(x, y, 50, 50)
             skin_rects.append((player_rect, self.game.ownedColors[i]))
+        btn_width = 130
+        btn_back_rect = pygame.Rect(0, panel_rect.top + 430, btn_width, 40)
+        btn_back_rect.centerx = panel_rect.centerx
+        is_hover_edit = btn_back_rect.collidepoint(mx, my)
+        color_btn = (42, 126, 234) if is_hover_edit else (22, 101, 206)
+        pygame.draw.rect(screen, color_btn, btn_back_rect, border_radius=8)
+        btn_txt = self.font_tiny.render("RETOUR", True, (255, 255, 255))
+        screen.blit(btn_txt, btn_txt.get_rect(center=btn_back_rect.center))
+        
 
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 for player_rect, color in skin_rects:
                     if player_rect.collidepoint(event.pos):
                         print(color)
+                if btn_back_rect.collidepoint(event.pos):
+                    self.inSkinMenu = False
