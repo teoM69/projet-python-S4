@@ -107,5 +107,7 @@ class Game:
         return colors
     
     def get_owned_colors(self, data):
-        colors = list(data["personal_bests"].items())
+        colors = list(data["owned_colors"])
+        for i in range(len(colors)):
+            colors[i] = (colors[i]["r"], colors[i]["g"], colors[i]["b"])
         return colors

@@ -306,7 +306,20 @@ class Lobby:
         title_surf = self.font_title.render("SKINS", True, (248, 250, 255))
         title_rect = title_surf.get_rect(center=(screen.get_width() // 2, panel_rect.top + 60))
         screen.blit(title_surf, title_rect)
-        #for i in range(len(self.game.ownedColors)):
-        ecart_x = 200 + (1 * 60) 
-        show_player = Player(ecart_x, 200, (255, 255, 0))
-        show_player.draw(screen)
+        skin_rects = [] #liste de rects pour detecter un clic sur un skin
+        for i in range(len(self.game.ownedColors)):
+            ecart_x = (i%5 * 110) 
+            if i < 5: ecart_y = 0
+            else: ecart_y = 100
+            x=150 + panel_rect.left + ecart_x
+            y=200 + panel_rect.top + ecart_y
+            show_player = Player(x, y, self.game.ownedColors[i])
+            show_player.draw(screen)
+            player_rect = pygame.Rect(x, y, 50, 50)
+            skin_rects.append((player_rect, self.game.ownedColors[i]))
+
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                for player_rect, color in skin_rects:
+                    if player_rect.collidepoint(event.pos):
+                        print(color)
