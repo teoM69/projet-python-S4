@@ -332,8 +332,7 @@ class Lobby:
         pygame.draw.rect(screen, color_btn, btn_back_rect, border_radius=8)
         btn_txt = self.font_tiny.render("RETOUR", True, (255, 255, 255))
         screen.blit(btn_txt, btn_txt.get_rect(center=btn_back_rect.center))
-        cursor_rect = pygame.Rect(self.skin_cursor_x, self.skin_cursor_y, 50, 50)
-        pygame.draw.rect(screen, (0,0,255), cursor_rect, border_radius=20)
+        pygame.draw.circle(screen, (255, 255, 255), (self.skin_cursor_x + 27, self.skin_cursor_y + 27), 40, 5)
 
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
