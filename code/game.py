@@ -111,3 +111,8 @@ class Game:
         for i in range(len(colors)):
             colors[i] = (colors[i]["r"], colors[i]["g"], colors[i]["b"])
         return colors
+    
+    def set_new_colors(self, color):
+        if self.lastColors[1] == color:  #empeche les deux joueurs d'avoir la meme couleur
+            self.lastColors[1] = self.lastColors[0]
+        self.lastColors[0] = color

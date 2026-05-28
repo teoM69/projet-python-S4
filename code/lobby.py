@@ -40,6 +40,7 @@ class Lobby:
 
         self.skin_cursor_x = 0
         self.skin_cursor_y = 0
+        self.skin_changed = False
 
     def _load_menu_background(self, screen):
         """Charge l'image de fond du menu, avec fallback unicolore si absente."""
@@ -194,7 +195,6 @@ class Lobby:
                 if event.key == pygame.K_RETURN:
                     if self.name.strip() != "":
                         self.game.name = self.name
-                        self.game.setScores()
                         self.inMenu = False
                 elif event.key == pygame.K_RIGHT:
                     idx = (modes_list.index(self.selected_mode) + 1) % len(modes_list)
@@ -316,8 +316,8 @@ class Lobby:
             else: ecart_y = 100
             x=150 + panel_rect.left + ecart_x
             y=200 + panel_rect.top + ecart_y
-            #A MODIFIER!!!!!!!!!
-            if self.game.lastColors[0] == self.game.ownedColors[i]:
+
+            if self.game.lastColors[0] == self.game.ownedColors[i] and not self.skin_changed:
                 self.skin_cursor_x = x
                 self.skin_cursor_y = y
             show_player = Player(x, y, self.game.ownedColors[i])
@@ -339,8 +339,9 @@ class Lobby:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 for skin_rect, color, x, y in skin_rects:
                     if skin_rect.collidepoint(event.pos):
-                        print(color)
+                        self.game.set_new_colors(color)
                         self.skin_cursor_x = x
                         self.skin_cursor_y = y
+                        self.skin_changed = True
                 if btn_back_rect.collidepoint(event.pos):
                     self.inSkinMenu = False
