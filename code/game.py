@@ -71,6 +71,8 @@ class Game:
             self.personalBest = self.score
 
         data["last_name"] = self.name
+
+        data["last_colors"] = [{"r": r, "g": g, "b": b} for r, g, b in self.lastColors]
         self.saveScores(data)
 
     def getBestScore(self, data):
