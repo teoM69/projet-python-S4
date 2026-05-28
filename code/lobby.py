@@ -330,7 +330,7 @@ class Lobby:
         is_hover_edit = btn_back_rect.collidepoint(mx, my)
         color_btn = (42, 126, 234) if is_hover_edit else (22, 101, 206)
         pygame.draw.rect(screen, color_btn, btn_back_rect, border_radius=8)
-        btn_txt = self.font_tiny.render("RETOUR", True, (255, 255, 255))
+        btn_txt = self.font_tiny.render("VALIDER", True, (255, 255, 255))
         screen.blit(btn_txt, btn_txt.get_rect(center=btn_back_rect.center))
         pygame.draw.circle(screen, (255, 255, 255), (self.skin_cursor_x + 27, self.skin_cursor_y + 27), 40, 5)
 
