@@ -1,4 +1,5 @@
 from code.world import World
+from code.combo import ComboSystem
 import json
 import os
 
@@ -29,6 +30,9 @@ class Game:
         self.ownedColors = []
         self.contactObstacleType = ""
 
+        # Systeme de combo pour l'acceleration du score.
+        self.combo = ComboSystem()
+
         # Monde de jeu (plateformes et ambiance).
         self.world = World(5, self.screen.get_width(), self.screen.get_height())
 
@@ -40,6 +44,7 @@ class Game:
         self.objective_bonus = 0
         self.difficulty = 1.0
         self.gameSpeed = 5.0
+        self.combo.reset()
         # self.player.spawn()
         # self.world.obstacles = []
         # self.sounds.playBackgroundMusic()

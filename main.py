@@ -273,6 +273,9 @@ while running:
         if game_state == STATE_PLAYING and not paused and living_players:
             elapsed_s = (now - run_start_time) / 1000.0
 
+            # Mise a jour du systeme de combo (accelere le score en cas de survie sans erreur).
+            game.combo.update(frame_ms)
+
             # Courbe de progression de vitesse: demarrage souple, acceleration progressive.
             ramp_ratio = min(1.0, elapsed_s / max(0.001, GAME_SPEED_RAMP_DURATION_SEC))
             speed_curve = ramp_ratio ** GAME_SPEED_RAMP_EXPONENT
@@ -355,6 +358,7 @@ while running:
                         visual_fx.spawn_for_obstacle(ob.type, ob.rect.center)
                         ob.apply_effect(player)
                         sound.playObstacleSound()
+                        game.combo.on_obstacle_hit()
                         try:
                             ob_gen.obstacles.remove(ob)
                         except ValueError:
@@ -365,7 +369,8 @@ while running:
                 game.objective_bonus += reward
 
             speed_bonus = max(0.0, game.gameSpeed - GAME_SPEED_START) * SCORE_SPEED_BONUS_FACTOR
-            game.score = int((elapsed_s * SCORE_BASE_PER_SEC) + (elapsed_s * speed_bonus) + game.objective_bonus)
+            combo_multiplier = game.combo.get_score_multiplier()
+            game.score = int(((elapsed_s * SCORE_BASE_PER_SEC) + (elapsed_s * speed_bonus) + game.objective_bonus) * combo_multiplier)
 
             # Condition de fin de run: tous les joueurs elimines.
             if not any(player.alive for player in players):
@@ -373,7 +378,8 @@ while running:
                 if reward:
                     game.objective_bonus += reward
                 speed_bonus = max(0.0, game.gameSpeed - GAME_SPEED_START) * SCORE_SPEED_BONUS_FACTOR
-                game.score = int((elapsed_s * SCORE_BASE_PER_SEC) + (elapsed_s * speed_bonus) + game.objective_bonus)
+                combo_multiplier = game.combo.get_score_multiplier()
+                game.score = int(((elapsed_s * SCORE_BASE_PER_SEC) + (elapsed_s * speed_bonus) + game.objective_bonus) * combo_multiplier)
                 game.end()
                 sound.playGameOverSound()
                 paused = False
