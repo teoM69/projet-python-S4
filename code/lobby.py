@@ -2,6 +2,7 @@ import os
 import pygame
 import sys
 from code.Player import Player
+from code.sound import Sound
 
 """Ecran de lobby / menu principal.
 
@@ -26,6 +27,7 @@ class Lobby:
         self.game = game
         self.showError = False
         self.selected_mode = "solo"
+        self.sound = Sound()
 
         # Polices dediees au menu.
         self.font_title = pygame.font.Font(None, 85)
@@ -195,6 +197,7 @@ class Lobby:
                 if event.key == pygame.K_RETURN:
                     if self.name.strip() != "":
                         self.game.name = self.name
+                        self.sound.playWhooshSound()
                         self.inMenu = False
                 elif event.key == pygame.K_RIGHT:
                     idx = (modes_list.index(self.selected_mode) + 1) % len(modes_list)

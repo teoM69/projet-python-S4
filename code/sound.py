@@ -23,6 +23,7 @@ class Sound:
             self.game_over_sfx = pygame.mixer.Sound("assets/Sounds/sound.gameover.mp3")
             self.gravity_sfx = pygame.mixer.Sound("assets/Sounds/sound.gravity.mp3")
             self.obstacle_sfx = pygame.mixer.Sound("assets/Sounds/sound.obstacle.mp3")
+            self.whoosh_sfx = pygame.mixer.Sound("assets/Sounds/sound.whoosh.mp3")
         except pygame.error as e:
             print(f"Erreur lors du chargement des sons : {e}") # Affiche une erreur mais continue l'execution pour permettre de jouer sans son si
 
@@ -55,6 +56,10 @@ class Sound:
     def playObstacleSound(self):
         """Joue l'effet sonore de collision/impact obstacle."""
         self.obstacle_sfx.play()
+
+    def playWhooshSound(self):
+        """Joue un son quand la partie démarre"""
+        self.whoosh_sfx.play()
 
 
     def toggleMusic(self): 
