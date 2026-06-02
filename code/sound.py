@@ -24,6 +24,8 @@ class Sound:
             self.gravity_sfx = pygame.mixer.Sound("assets/Sounds/sound.gravity.mp3")
             self.obstacle_sfx = pygame.mixer.Sound("assets/Sounds/sound.obstacle.mp3")
             self.whoosh_sfx = pygame.mixer.Sound("assets/Sounds/sound.whoosh.mp3")
+            self.click_sfx = pygame.mixer.Sound("assets/Sounds/sound.click.wav")
+            self.error_sfx = pygame.mixer.Sound("assets/Sounds/sound.error.wav")
         except pygame.error as e:
             print(f"Erreur lors du chargement des sons : {e}") # Affiche une erreur mais continue l'execution pour permettre de jouer sans son si
 
@@ -60,6 +62,14 @@ class Sound:
     def playWhooshSound(self):
         """Joue un son quand la partie démarre"""
         self.whoosh_sfx.play()
+
+    def playClickSound(self):
+        """Joue un son quand le joueur clique sur l'UI"""
+        self.click_sfx.play()
+ 
+    def playErrorSound(self):
+        """Joue un son d'erreur"""
+        self.error_sfx.play()
 
 
     def toggleMusic(self): 
