@@ -1,19 +1,19 @@
 {
-    "global_best": 0,
-    "personal_bests": {},
+    "global_best": 66,
+    "personal_bests": {
+        "Joueur 1": 66
+    },
     "last_name": "Joueur 1",
     "last_colors": [
         {
             "r": 0,
             "g": 0,
-            "b": 255,
-            "commentaire": "joueur 1"
+            "b": 255
         },
         {
             "r": 255,
             "g": 0,
-            "b": 0,
-            "commentaire": "joueur 2"
+            "b": 0
         }
     ],
     "owned_colors": [

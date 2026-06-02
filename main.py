@@ -375,6 +375,7 @@ while running:
                 speed_bonus = max(0.0, game.gameSpeed - GAME_SPEED_START) * SCORE_SPEED_BONUS_FACTOR
                 game.score = int((elapsed_s * SCORE_BASE_PER_SEC) + (elapsed_s * speed_bonus) + game.objective_bonus)
                 game.end()
+                sound.stopBackgroundMusic()
                 sound.playGameOverSound()
                 paused = False
                 ob_gen.obstacles.clear()
