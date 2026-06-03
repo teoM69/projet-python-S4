@@ -226,6 +226,7 @@ while running:
                         lobby.inMenu = False
                         death_time_ms = None
                         paused = False
+                        sound.playBackgroundMusic()
                         game_state = STATE_PLAYING
                     elif event.key in (pygame.K_ESCAPE, pygame.K_m):
                         lobby.inMenu = True
