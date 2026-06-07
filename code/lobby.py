@@ -34,6 +34,7 @@ class Lobby:
              os.path.join("assets", "Images", "BackGroundGreen.png")
              ]
         self.selected_bg_index = 0
+        self.sound = Sound()
 
         # Polices dediees au menu.
         self.font_title = pygame.font.Font(None, 85)
@@ -207,16 +208,22 @@ class Lobby:
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if btn_edit_rect.collidepoint(event.pos):
+                    self.sound.playClickSound()
                     self.changingName = True
                 elif btn_leaderboard_rect.collidepoint(event.pos):
+                    self.sound.playClickSound()
                     self.inLeaderboard = True
                 elif campagne_rect.collidepoint(event.pos):
+                    self.sound.playClickSound()
                     self.selected_mode = "campaign"
                 elif solo_rect.collidepoint(event.pos):
+                    self.sound.playClickSound()
                     self.selected_mode = "solo"
                 elif duo_rect.collidepoint(event.pos):
+                    self.sound.playClickSound()
                     self.selected_mode = "duo"
                 elif btn_skin_rect.collidepoint(event.pos):
+                    self.sound.playClickSound()
                     self.inSkinMenu = True
                 elif btn_bg_rect.collidepoint(event.pos):
                     self.sound.playClickSound()
@@ -228,11 +235,14 @@ class Lobby:
                 if event.key == pygame.K_RETURN:
                     if self.name.strip() != "":
                         self.game.name = self.name
+                        self.sound.playWhooshSound()
                         self.inMenu = False
                 elif event.key == pygame.K_RIGHT:
+                    self.sound.playClickSound()
                     idx = (modes_list.index(self.selected_mode) + 1) % len(modes_list)
                     self.selected_mode = modes_list[idx]
                 elif event.key == pygame.K_LEFT:
+                    self.sound.playClickSound()
                     idx = (modes_list.index(self.selected_mode) - 1) % len(modes_list)
                     self.selected_mode = modes_list[idx]
                 elif event.key == pygame.K_ESCAPE:
@@ -267,9 +277,11 @@ class Lobby:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     if self.name.strip() != "":
+                        self.sound.playClickSound()
                         self.changingName = False
                         self.showError = False
                     else:
+                        self.sound.playErrorSound()
                         self.showError = True
                 elif event.key == pygame.K_BACKSPACE:
                     self.name = self.name[:-1]
@@ -325,6 +337,7 @@ class Lobby:
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if btn_back_rect.collidepoint(event.pos):
+                    self.sound.playClickSound()
                     self.inLeaderboard = False
 
     def _draw_skin_menu(self, screen, events):
@@ -371,9 +384,11 @@ class Lobby:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 for skin_rect, color, x, y in skin_rects:
                     if skin_rect.collidepoint(event.pos):
+                        self.sound.playClickSound()
                         self.game.set_new_colors(color)
                         self.skin_cursor_x = x
                         self.skin_cursor_y = y
                         self.skin_changed = True
                 if btn_back_rect.collidepoint(event.pos):
+                    self.sound.playClickSound()
                     self.inSkinMenu = False
