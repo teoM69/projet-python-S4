@@ -24,7 +24,7 @@ def _lerp_color(color_a, color_b, t):
 
 class World:
     """Represente l'espace de jeu defilant."""
-    def __init__(self, speed, screen_width, screen_height):
+    def __init__(self, speed, screen_width, screen_height, bg_path=None):
         self.speed = speed
         self.wallHeight = 42
         self.obstacle = []
@@ -51,6 +51,7 @@ class World:
         self.difficulty_ratio = 0.0
         self.parallax_x = 0.0
         self.has_bg_image = False
+        self.bg_path = bg_path or os.path.join("assets", "Images", "BackGround.png")
 
         self._rebuild_visual_assets()
 
@@ -58,7 +59,7 @@ class World:
 
     def _rebuild_visual_assets(self):
         """Recharge/reconstruit les surfaces visuelles selon la taille courante."""
-        bg_path = os.path.join("assets", "Images", "BackGround.png")
+        bg_path = self.bg_path
         try:
             self.bg_image = pygame.image.load(bg_path).convert()
             self.bg_image = pygame.transform.scale(self.bg_image, (self.screen_width, self.screen_height))
@@ -471,3 +472,8 @@ class World:
         for seg in self.middle_structures:
             rect = pygame.Rect(int(seg["x"]), int(seg["y"]), int(seg["w"]), int(seg["h"]))
             self._draw_middle_segment(screen, rect)
+        
+         ##Change le fond et reconstruit les assets visuels."""
+    def set_background(self, bg_path):
+        self.bg_path = bg_path
+        self._rebuild_visual_assets()
