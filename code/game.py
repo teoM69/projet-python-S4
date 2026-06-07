@@ -35,6 +35,7 @@ class Game:
 
         # Monde de jeu (plateformes et ambiance).
         self.world = World(5, self.screen.get_width(), self.screen.get_height())
+        self.selected_background = None
 
     def start(self):
         """Demarre une nouvelle run en reinitialisant les compteurs de session."""
@@ -123,3 +124,8 @@ class Game:
         if self.lastColors[1] == color:  #empeche les deux joueurs d'avoir la meme couleur
             self.lastColors[1] = self.lastColors[0]
         self.lastColors[0] = color
+
+    ##Change le fond et reconstruit les assets visuels."""
+    def set_background(self, bg_path):
+        self.selected_background = bg_path
+        self.world.set_background(bg_path)
