@@ -41,7 +41,7 @@ class Sound:
         # -1 signifie boucle infinie.
         if self.backgroundMusicOn:
             pygame.mixer.music.play(-1)
- 
+
     def stopBackgroundMusic(self):
         """Arrete immediatement la musique de fond."""
         pygame.mixer.music.stop()
