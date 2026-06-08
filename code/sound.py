@@ -79,9 +79,3 @@ class Sound:
             self.stopBackgroundMusic()
         else:
             self.playBackgroundMusic()
-
-    def playClickSound(self):
-        try:
-            self.click_sfx.play()
-        except AttributeError:
-            pass
