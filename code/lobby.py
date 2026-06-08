@@ -3,7 +3,7 @@ import pygame
 import sys
 from code.Player import Player
 from code.sound import Sound
-
+ 
 """Ecran de lobby / menu principal.
 
 Ce module gere:

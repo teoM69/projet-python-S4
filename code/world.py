@@ -471,3 +471,8 @@ class World:
         for seg in self.middle_structures:
             rect = pygame.Rect(int(seg["x"]), int(seg["y"]), int(seg["w"]), int(seg["h"]))
             self._draw_middle_segment(screen, rect)
+        
+         ##Change le fond et reconstruit les assets visuels."""
+    def set_background(self, bg_path):
+        self.bg_path = bg_path
+        self._rebuild_visual_assets() 
