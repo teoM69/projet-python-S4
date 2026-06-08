@@ -476,4 +476,4 @@ class World:
          ##Change le fond et reconstruit les assets visuels."""
     def set_background(self, bg_path):
         self.bg_path = bg_path
-        self._rebuild_visual_assets()
+        self._rebuild_visual_assets() 
