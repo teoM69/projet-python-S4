@@ -1,4 +1,5 @@
 from code.world import World
+from code.combo import ComboSystem
 import json
 import os
 
@@ -29,8 +30,12 @@ class Game:
         self.ownedColors = []
         self.contactObstacleType = ""
 
+        # Systeme de combo pour l'acceleration du score.
+        self.combo = ComboSystem()
+
         # Monde de jeu (plateformes et ambiance).
         self.world = World(5, self.screen.get_width(), self.screen.get_height())
+        self.selected_background = None
 
     def start(self):
         """Demarre une nouvelle run en reinitialisant les compteurs de session."""
@@ -40,6 +45,7 @@ class Game:
         self.objective_bonus = 0
         self.difficulty = 1.0
         self.gameSpeed = 5.0
+        self.combo.reset()
         # self.player.spawn()
         # self.world.obstacles = []
         # self.sounds.playBackgroundMusic()
@@ -118,3 +124,8 @@ class Game:
         if self.lastColors[1] == color:  #empeche les deux joueurs d'avoir la meme couleur
             self.lastColors[1] = self.lastColors[0]
         self.lastColors[0] = color
+
+    def set_background(self, bg_path):
+        """Applique le fond choisi au monde."""
+        self.selected_background = bg_path
+        self.world.set_background(bg_path)

@@ -2,6 +2,7 @@ import os
 import pygame
 import sys
 from code.Player import Player
+from code.sound import Sound
 
 """Ecran de lobby / menu principal.
 
@@ -26,6 +27,13 @@ class Lobby:
         self.game = game
         self.showError = False
         self.selected_mode = "solo"
+        self.backgrounds = [
+              os.path.join("assets", "Images", "BackGround.png"),
+              os.path.join("assets", "Images", "BackGroundBlue.png"),
+              os.path.join("assets", "Images", "BackGroundGreen.png"),
+              ]
+        self.selected_bg_index = 0
+        self.sound = Sound()
 
         # Polices dediees au menu.
         self.font_title = pygame.font.Font(None, 85)
@@ -49,6 +57,17 @@ class Lobby:
             image = pygame.image.load(bg_path).convert()
             return pygame.transform.scale(image, (screen.get_width(), screen.get_height()))
         except Exception:
+            fallback = pygame.Surface((screen.get_width(), screen.get_height()))
+            fallback.fill((12, 10, 28))
+            return fallback
+        
+      ##Charge un fond specifique depuis un chemin donne."""   
+    def _load_menu_background_from(self, screen, path):
+        try:
+            image = pygame.image.load(path).convert()
+            return pygame.transform.scale(image, (screen.get_width(), screen.get_height()))
+        except Exception as e:
+            print(f"Erreur chargement fond: {e}")
             fallback = pygame.Surface((screen.get_width(), screen.get_height()))
             fallback.fill((12, 10, 28))
             return fallback
@@ -82,7 +101,7 @@ class Lobby:
         self._draw_menu_background(screen)
         mx, my = pygame.mouse.get_pos()
 
-        panel_w, panel_h = 800, 500
+        panel_w, panel_h = 800, 480
         panel_rect = pygame.Rect((screen.get_width() - panel_w) // 2, (screen.get_height() - panel_h) // 2, panel_w, panel_h)
 
         pygame.draw.rect(screen, (8, 12, 24, 240), panel_rect, border_radius=20)
@@ -112,10 +131,9 @@ class Lobby:
         screen.blit(edit_txt, edit_txt.get_rect(center=btn_edit_rect.center))
 
         skin_label = self.font_medium.render("Skin", True, (255, 255, 255))
-        skin_pos = (panel_rect.left + 500, panel_rect.top + 185)
-        screen.blit(skin_label, skin_pos)
+        skin_pos = (panel_rect.left + 560, panel_rect.top + 185)
 
-        btn_skin_rect = pygame.Rect(panel_rect.right - 200, panel_rect.top + 180, 130, 40)
+        btn_skin_rect = pygame.Rect(panel_rect.right - 160, panel_rect.top + 180, 130, 40)
         is_hover_skin = btn_skin_rect.collidepoint(mx, my)
         color_btn = (42, 126, 234) if is_hover_skin else (22, 101, 206)
         pygame.draw.rect(screen, color_btn, btn_skin_rect, border_radius=8)
@@ -123,11 +141,22 @@ class Lobby:
         screen.blit(change_skin_txt, change_skin_txt.get_rect(center=btn_skin_rect.center))
 
 
+        # --- BOUTON FOND ---
+        fond_tag = self.font_tiny.render("FOND", True, (155, 172, 196))
+        screen.blit(fond_tag, (panel_rect.left + 50, panel_rect.top + 240))
+        btn_bg_rect = pygame.Rect(panel_rect.left + 50, panel_rect.top + 260, 200, 40)
+        is_hover_bg = btn_bg_rect.collidepoint(mx, my)
+        color_bg_btn = (42, 126, 234) if is_hover_bg else (22, 101, 206)
+        pygame.draw.rect(screen, color_bg_btn, btn_bg_rect, border_radius=8)
+        bg_txt = self.font_tiny.render(f"FOND {self.selected_bg_index + 1}/3", True, (255, 255, 255))
+        screen.blit(bg_txt, bg_txt.get_rect(center=btn_bg_rect.center))
+
+
         #--- SECTION LEADERBOARD ---
         leaderboard_title = self.font_tiny.render("MEILLEURS SCORES", True, (155, 172, 196))
-        screen.blit(leaderboard_title, (panel_rect.left + 50, panel_rect.top + 250))
+        screen.blit(leaderboard_title, (panel_rect.left + 310, panel_rect.top + 240))
 
-        btn_leaderboard_rect = pygame.Rect(panel_rect.right - 180, panel_rect.top + 240, 130, 40)
+        btn_leaderboard_rect = pygame.Rect(panel_rect.left + 310, panel_rect.top + 260, 130, 40)
         is_hover_edit = btn_leaderboard_rect.collidepoint(mx, my)
         color_btn = (42, 126, 234) if is_hover_edit else (22, 101, 206)
         pygame.draw.rect(screen, color_btn, btn_leaderboard_rect, border_radius=8)
@@ -136,11 +165,11 @@ class Lobby:
 
         # --- SECTION MODE DE JEU ---
         mode_title = self.font_small.render("SELECTION DU MODE", True, (180, 190, 210))
-        screen.blit(mode_title, (panel_rect.left + 50, panel_rect.top + 280))
+        screen.blit(mode_title, (panel_rect.left + 50, panel_rect.top + 330))
 
-        campagne_rect = pygame.Rect(panel_rect.left + 50, panel_rect.top + 310, 220, 60)
-        solo_rect = pygame.Rect(panel_rect.left + 290, panel_rect.top + 310, 220, 60)
-        duo_rect = pygame.Rect(panel_rect.left + 530, panel_rect.top + 310, 220, 60)
+        campagne_rect = pygame.Rect(panel_rect.left + 50, panel_rect.top + 360, 220, 60)
+        solo_rect = pygame.Rect(panel_rect.left + 290, panel_rect.top + 360, 220, 60)
+        duo_rect = pygame.Rect(panel_rect.left + 530, panel_rect.top + 360, 220, 60)
 
         modes_info = (
             (campagne_rect, "campaign", "CAMPAGNE"),
@@ -179,27 +208,41 @@ class Lobby:
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if btn_edit_rect.collidepoint(event.pos):
+                    self.sound.playClickSound()
                     self.changingName = True
                 elif btn_leaderboard_rect.collidepoint(event.pos):
+                    self.sound.playClickSound()
                     self.inLeaderboard = True
                 elif campagne_rect.collidepoint(event.pos):
+                    self.sound.playClickSound()
                     self.selected_mode = "campaign"
                 elif solo_rect.collidepoint(event.pos):
+                    self.sound.playClickSound()
                     self.selected_mode = "solo"
                 elif duo_rect.collidepoint(event.pos):
+                    self.sound.playClickSound()
                     self.selected_mode = "duo"
                 elif btn_skin_rect.collidepoint(event.pos):
+                    self.sound.playClickSound()
                     self.inSkinMenu = True
+                elif btn_bg_rect.collidepoint(event.pos):
+                    self.sound.playClickSound()
+                    self.selected_bg_index = (self.selected_bg_index + 1) % len(self.backgrounds)
+                    self.game.set_background(self.backgrounds[self.selected_bg_index])
+                    self.menu_bg = self._load_menu_background_from(screen, self.backgrounds[self.selected_bg_index])
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     if self.name.strip() != "":
                         self.game.name = self.name
+                        self.sound.playWhooshSound()
                         self.inMenu = False
                 elif event.key == pygame.K_RIGHT:
+                    self.sound.playClickSound()
                     idx = (modes_list.index(self.selected_mode) + 1) % len(modes_list)
                     self.selected_mode = modes_list[idx]
                 elif event.key == pygame.K_LEFT:
+                    self.sound.playClickSound()
                     idx = (modes_list.index(self.selected_mode) - 1) % len(modes_list)
                     self.selected_mode = modes_list[idx]
                 elif event.key == pygame.K_ESCAPE:
@@ -234,9 +277,11 @@ class Lobby:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     if self.name.strip() != "":
+                        self.sound.playClickSound()
                         self.changingName = False
                         self.showError = False
                     else:
+                        self.sound.playErrorSound()
                         self.showError = True
                 elif event.key == pygame.K_BACKSPACE:
                     self.name = self.name[:-1]
@@ -292,6 +337,7 @@ class Lobby:
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if btn_back_rect.collidepoint(event.pos):
+                    self.sound.playClickSound()
                     self.inLeaderboard = False
 
     def _draw_skin_menu(self, screen, events):
@@ -338,9 +384,11 @@ class Lobby:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 for skin_rect, color, x, y in skin_rects:
                     if skin_rect.collidepoint(event.pos):
+                        self.sound.playClickSound()
                         self.game.set_new_colors(color)
                         self.skin_cursor_x = x
                         self.skin_cursor_y = y
                         self.skin_changed = True
                 if btn_back_rect.collidepoint(event.pos):
+                    self.sound.playClickSound()
                     self.inSkinMenu = False

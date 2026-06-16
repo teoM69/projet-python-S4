@@ -60,6 +60,13 @@ PLAYER_GRAVITY_MAX = 8.5
 PLAYER_GRAVITY_RAMP_DURATION_SEC = 65.0
 PLAYER_GRAVITY_RAMP_EXPONENT = 1.6
 
+# Systeme de combo: multiplicateur de score pour survivre sans erreur.
+COMBO_THRESHOLD_SEC = 5.0  # Temps minimum entre obstacles pour incrementer le combo
+COMBO_MULTIPLIER_BASE = 1.0  # Multiplicateur de score initial (1x)
+COMBO_MULTIPLIER_MAX = 3.0  # Multiplicateur de score maximum (3x)
+COMBO_MULTIPLIER_INCREMENT = 0.1  # Augmentation du multiplicateur par niveau de combo
+COMBO_LEVEL_MAX = 20  # Nombre maximum de niveaux de combo
+
 # Delais d'affichage en fin de run.
 GAME_OVER_DELAY_MS = 500
 GAME_OVER_RETURN_LOBBY_MS = None
