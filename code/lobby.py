@@ -82,7 +82,7 @@ class Lobby:
         self._draw_menu_background(screen)
         mx, my = pygame.mouse.get_pos()
 
-        panel_w, panel_h = 800, 480
+        panel_w, panel_h = 800, 500
         panel_rect = pygame.Rect((screen.get_width() - panel_w) // 2, (screen.get_height() - panel_h) // 2, panel_w, panel_h)
 
         pygame.draw.rect(screen, (8, 12, 24, 240), panel_rect, border_radius=20)
@@ -166,13 +166,13 @@ class Lobby:
         screen.blit(help_surf, help_surf.get_rect(center=(screen.get_width() // 2, panel_rect.bottom - 90)))
 
         hint_play = self.font_small.render("Appuyez sur ENTREE pour demarrer", True, (200, 200, 200))
-        screen.blit(hint_play, hint_play.get_rect(center=(screen.get_width() // 2, panel_rect.bottom - 50)))
+        screen.blit(hint_play, hint_play.get_rect(center=(screen.get_width() // 2, panel_rect.bottom - 60)))
 
-        hint_exit = self.font_tiny.render("ECHAP pour quitter", True, (100, 110, 130))
-        screen.blit(hint_exit, hint_exit.get_rect(center=(screen.get_width() // 2, panel_rect.bottom - 20)))
+        hint_exit = self.font_tiny.render("ECHAP pour quitter", True, (100, 110, 120))
+        screen.blit(hint_exit, hint_exit.get_rect(center=(screen.get_width() // 2, panel_rect.bottom - 30)))
 
         hint_mode = self.font_tiny.render("Fleches Gauche/Droite: changer le mode", True, (130, 145, 170))
-        screen.blit(hint_mode, hint_mode.get_rect(center=(screen.get_width() // 2, panel_rect.bottom - 5)))
+        screen.blit(hint_mode, hint_mode.get_rect(center=(screen.get_width() // 2, panel_rect.bottom - 15)))
 
         # Navigation clavier/souris pour modifier l'etat courant du lobby.
         modes_list = ["campaign", "solo", "duo"]
