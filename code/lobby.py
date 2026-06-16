@@ -101,7 +101,7 @@ class Lobby:
         self._draw_menu_background(screen)
         mx, my = pygame.mouse.get_pos()
 
-        panel_w, panel_h = 800, 480
+        panel_w, panel_h = 800, 560
         panel_rect = pygame.Rect((screen.get_width() - panel_w) // 2, (screen.get_height() - panel_h) // 2, panel_w, panel_h)
 
         pygame.draw.rect(screen, (8, 12, 24, 240), panel_rect, border_radius=20)
