@@ -231,6 +231,7 @@ while running:
                     elif event.key in (pygame.K_ESCAPE, pygame.K_m):
                         lobby.inMenu = True
                         game_state = STATE_MENU
+                        sound.playBackgroundMusic()
                 elif game_state == STATE_LEVEL_WON:
                     if event.key == pygame.K_RETURN:
                         if campaign.advance_level():
@@ -238,12 +239,14 @@ while running:
                             game_state = STATE_PLAYING
                         else:
                             game_state = STATE_CAMPAIGN_COMPLETE
+                            
             
                 elif game_state == STATE_CAMPAIGN_COMPLETE:
                     if event.key in (pygame.K_RETURN, pygame.K_ESCAPE, pygame.K_m):
                         campaign.current_level_idx = 0
                         lobby.inMenu = True
                         game_state = STATE_MENU
+                        sound.playBackgroundMusic()
                 else:
                     if event.key == pygame.K_ESCAPE:
                         lobby.inMenu = True
