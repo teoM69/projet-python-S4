@@ -1,18 +1,21 @@
 {
-    "global_best": 66,
+    "global_best": 1398,
     "personal_bests": {
-        "Joueur 1": 54
+        "Joueur 1": 480,
+        "a": 54,
+        "test": 749,
+        "Joueur2": 1398
     },
-    "last_name": "Joueur 1",
+    "last_name": "Joueur1",
     "last_colors": [
-        {
-            "r": 0,
-            "g": 0,
-            "b": 255
-        },
         {
             "r": 255,
             "g": 0,
+            "b": 0
+        },
+        {
+            "r": 0,
+            "g": 255,
             "b": 0
         }
     ],

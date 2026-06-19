@@ -37,8 +37,8 @@ class CampaignMode:
     def __init__(self):
         # Progression ordonnee de la campagne (du plus simple au plus difficile).
         self.levels = [
-            Level(1, "Éveil", 5.0, 7.0, 0.005, 1.2, 0.0, 100),
-            Level(2, "Intermediaire", 6.0, 9.0, 0.006, 1.0, 0.1, 500),
+            Level(1, "Éveil", 5.0, 7.0, 0.005, 1.2, 0.0, 300),
+            Level(2, "Intermediaire", 6.0, 9.0, 0.006, 1.0, 0.1, 600),
             Level(3, "Expert", 8.0, 12.0, 0.008, 0.8, 0.2, 1000)
         ]
         # Index du niveau actif et compteur global de score campagne.
